@@ -1,31 +1,33 @@
 package com.maxmind.device.collector
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaDrm
-import android.os.Build
 import android.provider.Settings
 import android.util.Base64
-import com.maxmind.device.model.StoredIDs
+import com.maxmind.device.model.DeviceIDs
 import java.util.UUID
 
 /**
- * Collects persistent device identifiers.
+ * Collects device-generated persistent identifiers.
  *
  * This collector gathers hardware-backed and app-scoped identifiers
- * that can be used for device fingerprinting.
+ * that can be used for device fingerprinting. These are distinct from
+ * server-generated stored IDs.
  */
-internal class StoredIDsCollector(private val context: Context) {
+internal class DeviceIDsCollector(
+    private val context: Context,
+) {
     /**
-     * Collects stored device identifiers.
+     * Collects device-generated identifiers.
      *
-     * @return [StoredIDs] containing available device identifiers
+     * @return [DeviceIDs] containing available device identifiers
      */
-    fun collect(): StoredIDs {
-        return StoredIDs(
+    fun collect(): DeviceIDs =
+        DeviceIDs(
             mediaDrmID = collectMediaDrmID(),
             androidID = collectAndroidID(),
         )
-    }
 
     /**
      * Collects the MediaDRM device unique ID.
@@ -35,19 +37,14 @@ internal class StoredIDsCollector(private val context: Context) {
      *
      * @return Base64-encoded device ID, or null if unavailable
      */
-    private fun collectMediaDrmID(): String? {
-        return try {
+    private fun collectMediaDrmID(): String? =
+        try {
             val mediaDrm = MediaDrm(WIDEVINE_UUID)
             try {
                 val deviceId = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
                 Base64.encodeToString(deviceId, Base64.NO_WRAP)
             } finally {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    mediaDrm.close()
-                } else {
-                    @Suppress("DEPRECATION")
-                    mediaDrm.release()
-                }
+                mediaDrm.close()
             }
         } catch (
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
@@ -56,7 +53,6 @@ internal class StoredIDsCollector(private val context: Context) {
             // MediaDRM may not be available on all devices (e.g., emulators, some custom ROMs)
             null
         }
-    }
 
     /**
      * Collects the Android ID (SSAID).
@@ -67,8 +63,9 @@ internal class StoredIDsCollector(private val context: Context) {
      *
      * @return The Android ID string, or null if unavailable
      */
-    private fun collectAndroidID(): String? {
-        return try {
+    @SuppressLint("HardwareIds") // Intentional for fraud detection fingerprinting
+    private fun collectAndroidID(): String? =
+        try {
             Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
         } catch (
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
@@ -77,7 +74,6 @@ internal class StoredIDsCollector(private val context: Context) {
             // Settings.Secure may throw on some custom ROMs or restricted contexts
             null
         }
-    }
 
     internal companion object {
         /**

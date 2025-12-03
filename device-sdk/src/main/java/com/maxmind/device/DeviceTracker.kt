@@ -6,6 +6,7 @@ import com.maxmind.device.collector.DeviceDataCollector
 import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.DeviceData
 import com.maxmind.device.network.DeviceApiClient
+import com.maxmind.device.storage.StoredIDStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,7 +45,8 @@ public class DeviceTracker private constructor(
     private val config: SdkConfig,
 ) {
     private val applicationContext: Context = context.applicationContext
-    private val deviceDataCollector = DeviceDataCollector(applicationContext)
+    private val storedIDStorage = StoredIDStorage(applicationContext)
+    private val deviceDataCollector = DeviceDataCollector(applicationContext, storedIDStorage)
     private val apiClient =
         DeviceApiClient(
             serverUrl = config.serverUrl,
@@ -78,12 +80,21 @@ public class DeviceTracker private constructor(
      * Sends device data to MaxMind servers.
      *
      * This is a suspending function that should be called from a coroutine.
+     * On success, saves the server-generated stored ID for future requests.
      *
      * @param deviceData The device data to send
      * @return [Result] indicating success or failure
      */
     public suspend fun sendDeviceData(deviceData: DeviceData): Result<Unit> {
-        return apiClient.sendDeviceData(deviceData).map { Unit }
+        return apiClient.sendDeviceData(deviceData).map { response ->
+            // Save the stored ID from the server response
+            response.storedID?.let { id ->
+                storedIDStorage.save(id)
+                if (config.enableLogging) {
+                    Log.d(TAG, "Stored ID saved from server response")
+                }
+            }
+        }
     }
 
     /**

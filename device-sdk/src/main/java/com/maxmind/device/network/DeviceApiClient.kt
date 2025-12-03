@@ -1,18 +1,19 @@
 package com.maxmind.device.network
 
 import com.maxmind.device.model.DeviceData
+import com.maxmind.device.model.ServerResponse
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
@@ -61,7 +62,7 @@ internal class DeviceApiClient(
      * Sends device data to the MaxMind API.
      *
      * @param deviceData The device data to send
-     * @return [Result] containing the HTTP response or an error
+     * @return [Result] containing the server response with stored ID, or an error
      */
     suspend fun sendDeviceData(deviceData: DeviceData): Result<ServerResponse> {
         return try {
@@ -74,13 +75,26 @@ internal class DeviceApiClient(
                         put(key, value)
                     }
                 }
-            Result.success(response)
+
+            if (response.status.isSuccess()) {
+                val serverResponse: ServerResponse = response.body()
+                Result.success(serverResponse)
+            } else {
+                Result.failure(
+                    ApiException("Server returned ${response.status.value}: ${response.status.description}"),
+                )
+            }
         } catch (
             @Suppress("TooGenericExceptionCaught") e: Exception,
         ) {
             Result.failure(e)
         }
     }
+
+    /**
+     * Exception thrown when API request fails.
+     */
+    public class ApiException(message: String) : Exception(message)
 
     /**
      * Closes the HTTP client and releases resources.
