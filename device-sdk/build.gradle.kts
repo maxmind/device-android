@@ -7,21 +7,14 @@ plugins {
     alias(libs.plugins.ktlint)
     id("maven-publish")
     id("signing")
-    id("tech.apter.junit5.jupiter.robolectric-extension-gradle-plugin") version "0.9.0"
 }
 
 android {
     namespace = "com.maxmind.device"
-    compileSdk =
-        libs.versions.compileSdk
-            .get()
-            .toInt()
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk =
-            libs.versions.minSdk
-                .get()
-                .toInt()
+        minSdk = libs.versions.minSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -91,7 +84,6 @@ dependencies {
 
     // Testing
     testImplementation(libs.bundles.testing)
-    testImplementation(libs.ktor.client.mock)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.bundles.android.testing)
@@ -159,7 +151,7 @@ publishing {
                     url.set(findProperty("POM_SCM_URL")?.toString() ?: "")
                     connection.set(findProperty("POM_SCM_CONNECTION")?.toString() ?: "")
                     developerConnection.set(
-                        findProperty("POM_SCM_DEV_CONNECTION")?.toString() ?: "",
+                        findProperty("POM_SCM_DEV_CONNECTION")?.toString() ?: ""
                     )
                 }
             }
