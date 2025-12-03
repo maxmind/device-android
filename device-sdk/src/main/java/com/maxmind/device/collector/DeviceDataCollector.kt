@@ -25,6 +25,8 @@ import java.util.TimeZone
  * that are available through the Android APIs.
  */
 internal class DeviceDataCollector(private val context: Context) {
+    private val storedIDsCollector = StoredIDsCollector(context)
+
     /**
      * Collects current device data.
      *
@@ -32,6 +34,7 @@ internal class DeviceDataCollector(private val context: Context) {
      */
     fun collect(): DeviceData {
         return DeviceData(
+            storedIDs = storedIDsCollector.collect(),
             build = collectBuildInfo(),
             display = collectDisplayInfo(),
             hardware = collectHardwareInfo(),
