@@ -34,6 +34,8 @@ public data class DeviceData(
     val installation: InstallationInfo,
     val settings: SystemSettings = SystemSettings(),
     val behavior: BehaviorInfo = BehaviorInfo(),
+    val telephony: TelephonyInfo? = null,
+    val fonts: FontInfo? = null,
     // Context
     val locale: LocaleInfo,
     @SerialName("timezone_offset")

@@ -44,6 +44,8 @@ internal class DeviceDataCollector(
     private val networkCollector = NetworkCollector(context)
     private val settingsCollector = SettingsCollector(context)
     private val behaviorCollector = BehaviorCollector(context)
+    private val telephonyCollector = TelephonyCollector(context)
+    private val fontCollector = FontCollector()
     private val webViewCollector = WebViewCollector(context)
 
     /**
@@ -68,6 +70,8 @@ internal class DeviceDataCollector(
             installation = collectInstallationInfo(),
             settings = settingsCollector.collect(),
             behavior = behaviorCollector.collect(),
+            telephony = telephonyCollector.collect(),
+            fonts = fontCollector.collect(),
             locale = collectLocaleInfo(),
             // Timezone offset in minutes
             timezoneOffset = TimeZone.getDefault().rawOffset / 60000,
