@@ -35,6 +35,7 @@ internal class DeviceDataCollector(private val context: Context) {
     private val networkCollector = NetworkCollector(context)
     private val settingsCollector = SettingsCollector(context)
     private val behaviorCollector = BehaviorCollector(context)
+    private val webViewCollector = WebViewCollector(context)
 
     /**
      * Collects current device data.
@@ -61,7 +62,7 @@ internal class DeviceDataCollector(private val context: Context) {
             // Timezone offset in minutes
             timezoneOffset = TimeZone.getDefault().rawOffset / 60000,
             deviceTime = System.currentTimeMillis(),
-            // Other fields will be populated by dedicated collectors in future commits
+            webViewUserAgent = webViewCollector.collectUserAgent(),
         )
 
     private fun collectBuildInfo(): BuildInfo =
