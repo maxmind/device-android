@@ -21,6 +21,7 @@ internal class NetworkCollector(
      *
      * @return [NetworkInfo] containing network context, or null if unavailable
      */
+    @Suppress("ReturnCount")
     fun collect(): NetworkInfo? {
         return try {
             val connectivityManager =

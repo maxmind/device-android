@@ -20,6 +20,7 @@ internal class GpuCollector {
      *
      * @return [GpuInfo] containing GPU details, or null if unavailable
      */
+    @Suppress("LongMethod", "ReturnCount", "CyclomaticComplexMethod")
     fun collect(): GpuInfo? {
         var display: EGLDisplay = EGL14.EGL_NO_DISPLAY
         var context: EGLContext = EGL14.EGL_NO_CONTEXT

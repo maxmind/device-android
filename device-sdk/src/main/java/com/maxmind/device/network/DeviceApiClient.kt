@@ -74,21 +74,7 @@ internal class DeviceApiClient(
                         put(key, value)
                     }
                 }
-
-            val response =
-                httpClient.post("$serverUrl/android/device") {
-                    contentType(ContentType.Application.Json)
-                    setBody(requestBody)
-                }
-
-            if (response.status.isSuccess()) {
-                val serverResponse: ServerResponse = response.body()
-                Result.success(serverResponse)
-            } else {
-                Result.failure(
-                    ApiException("Server returned ${response.status.value}: ${response.status.description}"),
-                )
-            }
+            Result.success(response)
         } catch (
             @Suppress("TooGenericExceptionCaught") e: Exception,
         ) {

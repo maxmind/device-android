@@ -121,7 +121,9 @@ public class DeviceTracker private constructor(
                     if (config.enableLogging) {
                         Log.d(TAG, "Automatic device data collection completed")
                     }
-                } catch (e: Exception) {
+                } catch (
+                    @Suppress("TooGenericExceptionCaught") e: Exception,
+                ) {
                     if (config.enableLogging) {
                         Log.e(TAG, "Automatic collection failed", e)
                     }
@@ -167,7 +169,7 @@ public class DeviceTracker private constructor(
             config: SdkConfig,
         ): DeviceTracker {
             if (instance != null) {
-                throw IllegalStateException("SDK is already initialized")
+                error("SDK is already initialized")
             }
 
             return synchronized(this) {
@@ -184,7 +186,7 @@ public class DeviceTracker private constructor(
         @JvmStatic
         public fun getInstance(): DeviceTracker {
             return instance
-                ?: throw IllegalStateException("SDK not initialized. Call initialize() first.")
+                ?: error("SDK not initialized. Call initialize() first.")
         }
 
         /**
