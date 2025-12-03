@@ -33,6 +33,8 @@ internal class DeviceDataCollector(private val context: Context) {
     private val codecCollector = CodecCollector()
     private val systemFeaturesCollector = SystemFeaturesCollector(context)
     private val networkCollector = NetworkCollector(context)
+    private val settingsCollector = SettingsCollector(context)
+    private val behaviorCollector = BehaviorCollector(context)
 
     /**
      * Collects current device data.
@@ -53,6 +55,8 @@ internal class DeviceDataCollector(private val context: Context) {
             systemFeatures = systemFeaturesCollector.collect(),
             network = networkCollector.collect(),
             installation = collectInstallationInfo(),
+            settings = settingsCollector.collect(),
+            behavior = behaviorCollector.collect(),
             locale = collectLocaleInfo(),
             // Timezone offset in minutes
             timezoneOffset = TimeZone.getDefault().rawOffset / 60000,
