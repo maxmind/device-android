@@ -26,6 +26,7 @@ import java.util.TimeZone
  */
 internal class DeviceDataCollector(private val context: Context) {
     private val storedIDsCollector = StoredIDsCollector(context)
+    private val gpuCollector = GpuCollector()
 
     /**
      * Collects current device data.
@@ -38,6 +39,7 @@ internal class DeviceDataCollector(private val context: Context) {
             build = collectBuildInfo(),
             display = collectDisplayInfo(),
             hardware = collectHardwareInfo(),
+            gpu = gpuCollector.collect(),
             installation = collectInstallationInfo(),
             locale = collectLocaleInfo(),
             // Timezone offset in minutes
