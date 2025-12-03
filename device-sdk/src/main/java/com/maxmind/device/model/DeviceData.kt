@@ -1,5 +1,6 @@
 package com.maxmind.device.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -10,8 +11,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 public data class DeviceData(
-    // Identifiers
-    val storedIDs: StoredIDs = StoredIDs(),
+    // Server-generated stored ID (like browser cookies)
+    @SerialName("stored_id")
+    val storedID: StoredID = StoredID(),
+    // Device-generated identifiers
+    @SerialName("device_ids")
+    val deviceIDs: DeviceIDs = DeviceIDs(),
     // Device info
     val build: BuildInfo,
     val display: DisplayInfo,

@@ -15,6 +15,8 @@ import com.maxmind.device.model.DisplayInfo
 import com.maxmind.device.model.HardwareInfo
 import com.maxmind.device.model.InstallationInfo
 import com.maxmind.device.model.LocaleInfo
+import com.maxmind.device.model.StoredID
+import com.maxmind.device.storage.StoredIDStorage
 import java.util.Locale
 import java.util.TimeZone
 
@@ -23,9 +25,16 @@ import java.util.TimeZone
  *
  * This class is responsible for gathering various device attributes
  * that are available through the Android APIs.
+ *
+ * @param context Application context for accessing system services
+ * @param storedIDStorage Optional storage for server-generated stored IDs
  */
-internal class DeviceDataCollector(private val context: Context) {
-    private val storedIDsCollector = StoredIDsCollector(context)
+internal class DeviceDataCollector(
+    private val context: Context,
+    storedIDStorage: StoredIDStorage? = null,
+) {
+    private val storedIDCollector = storedIDStorage?.let { StoredIDCollector(it) }
+    private val deviceIDsCollector = DeviceIDsCollector(context)
     private val gpuCollector = GpuCollector()
     private val audioCollector = AudioCollector(context)
     private val sensorCollector = SensorCollector(context)
@@ -42,9 +51,10 @@ internal class DeviceDataCollector(private val context: Context) {
      *
      * @return [DeviceData] containing collected device information
      */
-    fun collect(): DeviceData {
-        return DeviceData(
-            storedIDs = storedIDsCollector.collect(),
+    fun collect(): DeviceData =
+        DeviceData(
+            storedID = storedIDCollector?.collect() ?: StoredID(),
+            deviceIDs = deviceIDsCollector.collect(),
             build = collectBuildInfo(),
             display = collectDisplayInfo(),
             hardware = collectHardwareInfo(),
