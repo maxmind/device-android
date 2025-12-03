@@ -15,7 +15,6 @@ import java.util.UUID
  * that can be used for device fingerprinting.
  */
 internal class StoredIDsCollector(private val context: Context) {
-
     /**
      * Collects stored device identifiers.
      *
@@ -50,7 +49,10 @@ internal class StoredIDsCollector(private val context: Context) {
                     mediaDrm.release()
                 }
             }
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (
+            @Suppress("TooGenericExceptionCaught", "SwallowedException")
+            e: Exception,
+        ) {
             // MediaDRM may not be available on all devices (e.g., emulators, some custom ROMs)
             null
         }
@@ -68,7 +70,10 @@ internal class StoredIDsCollector(private val context: Context) {
     private fun collectAndroidID(): String? {
         return try {
             Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") e: Exception) {
+        } catch (
+            @Suppress("TooGenericExceptionCaught", "SwallowedException")
+            e: Exception,
+        ) {
             // Settings.Secure may throw on some custom ROMs or restricted contexts
             null
         }
