@@ -29,6 +29,7 @@ internal class DeviceDataCollector(private val context: Context) {
     private val gpuCollector = GpuCollector()
     private val audioCollector = AudioCollector(context)
     private val sensorCollector = SensorCollector(context)
+    private val cameraCollector = CameraCollector(context)
 
     /**
      * Collects current device data.
@@ -44,6 +45,7 @@ internal class DeviceDataCollector(private val context: Context) {
             gpu = gpuCollector.collect(),
             audio = audioCollector.collect(),
             sensors = sensorCollector.collect(),
+            cameras = cameraCollector.collect(),
             installation = collectInstallationInfo(),
             locale = collectLocaleInfo(),
             // Timezone offset in minutes
