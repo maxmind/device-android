@@ -115,15 +115,23 @@
                     android:clipToPadding="false"
                     android:fillViewport="true">
 
-                    <TextView
-                        android:id="@+id/tvLog"
+                    <LinearLayout
+                        android:id="@+id/logContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                        android:fontFamily="monospace"
-                        android:textSize="12sp"
-                        android:textIsSelectable="true"
-                        tools:text="Log output will appear here..." />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvLog"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                            android:fontFamily="monospace"
+                            android:textSize="12sp"
+                            android:textIsSelectable="true"
+                            tools:text="Log output will appear here..." />
+
+                    </LinearLayout>
 
                 </ScrollView>
 
