@@ -108,7 +108,8 @@ The SDK uses a **singleton pattern with initialization guard**:
 2. **Configuration Layer** (`config/SdkConfig.kt`)
    - Immutable configuration with builder pattern
    - `SdkConfig.Builder` validates inputs in `build()`
-   - Default server URL: `https://device-api.maxmind.com/v1`
+   - Default servers: `d-ipv6.mmapiws.com` and `d-ipv4.mmapiws.com`
+     (dual-request flow)
 
 3. **Data Collection Layer** (`collector/DeviceDataCollector.kt`)
    - Collects device information via Android APIs
@@ -119,7 +120,18 @@ The SDK uses a **singleton pattern with initialization guard**:
    - Ktor HTTP client with Android engine
    - kotlinx.serialization for JSON
    - Optional logging based on `enableLogging` config
-   - Returns `Result<HttpResponse>` for error handling
+   - Returns `Result<ServerResponse>` for error handling
+
+   **Dual-Request Flow (IPv6/IPv4):** To capture both IP addresses for a device,
+   the SDK uses a dual-request flow:
+   1. First request sent to `d-ipv6.mmapiws.com/device/android`
+   2. If response contains `ip_version: 6`, a second request is sent to
+      `d-ipv4.mmapiws.com/device/android`
+   3. The IPv4 request is fire-and-forget (failures don't affect the result)
+   4. The `stored_id` from the IPv6 response is returned and persisted
+
+   If a custom server URL is configured via `SdkConfig.Builder.serverUrl()`, the
+   dual-request flow is disabled and only a single request is sent.
 
 ### Data Model
 

@@ -47,12 +47,7 @@ public class DeviceTracker private constructor(
     private val applicationContext: Context = context.applicationContext
     private val storedIDStorage = StoredIDStorage(applicationContext)
     private val deviceDataCollector = DeviceDataCollector(applicationContext, storedIDStorage)
-    private val apiClient =
-        DeviceApiClient(
-            serverUrl = config.serverUrl,
-            accountID = config.accountID,
-            enableLogging = config.enableLogging,
-        )
+    private val apiClient = DeviceApiClient(config)
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -72,9 +67,7 @@ public class DeviceTracker private constructor(
      *
      * @return [DeviceData] containing collected device information
      */
-    public fun collectDeviceData(): DeviceData {
-        return deviceDataCollector.collect()
-    }
+    public fun collectDeviceData(): DeviceData = deviceDataCollector.collect()
 
     /**
      * Sends device data to MaxMind servers.
@@ -85,8 +78,8 @@ public class DeviceTracker private constructor(
      * @param deviceData The device data to send
      * @return [Result] indicating success or failure
      */
-    public suspend fun sendDeviceData(deviceData: DeviceData): Result<Unit> {
-        return apiClient.sendDeviceData(deviceData).map { response ->
+    public suspend fun sendDeviceData(deviceData: DeviceData): Result<Unit> =
+        apiClient.sendDeviceData(deviceData).map { response ->
             // Save the stored ID from the server response
             response.storedID?.let { id ->
                 storedIDStorage.save(id)
@@ -95,7 +88,6 @@ public class DeviceTracker private constructor(
                 }
             }
         }
-    }
 
     /**
      * Collects device data and sends it to MaxMind servers in one operation.
@@ -195,10 +187,9 @@ public class DeviceTracker private constructor(
          * @throws IllegalStateException if SDK is not initialized
          */
         @JvmStatic
-        public fun getInstance(): DeviceTracker {
-            return instance
+        public fun getInstance(): DeviceTracker =
+            instance
                 ?: error("SDK not initialized. Call initialize() first.")
-        }
 
         /**
          * Checks if the SDK is initialized.
