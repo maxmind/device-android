@@ -69,8 +69,8 @@ internal class TelephonyCollectorTest {
     }
 
     @Test
-    internal fun `collect handles exception gracefully`() {
-        every { mockTelephonyManager.networkOperatorName } throws RuntimeException("Test exception")
+    internal fun `collect handles SecurityException gracefully`() {
+        every { mockTelephonyManager.networkOperatorName } throws SecurityException("Permission denied")
 
         val result = collector.collect()
 
