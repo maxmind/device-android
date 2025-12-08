@@ -62,7 +62,6 @@ class MainActivity : AppCompatActivity() {
             // Note: Replace with your actual MaxMind account ID
             val config = SdkConfig.Builder(123456)  // Demo account ID - replace with real one
                 .enableLogging(true)
-                .serverUrl(SdkConfig.DEFAULT_SERVER_URL)
                 .build()
 
             // Initialize SDK

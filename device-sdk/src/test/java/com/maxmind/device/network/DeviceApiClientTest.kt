@@ -1,5 +1,6 @@
 package com.maxmind.device.network
 
+import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.BuildInfo
 import com.maxmind.device.model.DeviceData
 import com.maxmind.device.model.DisplayInfo
@@ -114,6 +115,37 @@ internal class DeviceApiClientTest {
 
         assertNotNull(response)
         assertEquals("test-uuid:test-hmac", response.storedID)
+    }
+
+    @Test
+    internal fun `ServerResponse parses ip_version correctly`() {
+        val jsonString = """{"stored_id":"test-uuid:test-hmac","ip_version":6}"""
+
+        val response = json.decodeFromString<ServerResponse>(jsonString)
+
+        assertNotNull(response)
+        assertEquals("test-uuid:test-hmac", response.storedID)
+        assertEquals(6, response.ipVersion)
+    }
+
+    @Test
+    internal fun `ServerResponse parses ip_version 4 correctly`() {
+        val jsonString = """{"stored_id":"test-uuid:test-hmac","ip_version":4}"""
+
+        val response = json.decodeFromString<ServerResponse>(jsonString)
+
+        assertNotNull(response)
+        assertEquals(4, response.ipVersion)
+    }
+
+    @Test
+    internal fun `ServerResponse parses missing ip_version as null`() {
+        val jsonString = """{"stored_id":"test-uuid:test-hmac"}"""
+
+        val response = json.decodeFromString<ServerResponse>(jsonString)
+
+        assertNotNull(response)
+        assertNull(response.ipVersion)
     }
 
     @Test
@@ -254,7 +286,7 @@ internal class DeviceApiClientTest {
 
             client.sendDeviceData(testDeviceData)
 
-            assertEquals("https://api.example.com/android/device", capturedUrl)
+            assertEquals("https://api.example.com/device/android", capturedUrl)
             client.close()
         }
 
@@ -315,10 +347,11 @@ internal class DeviceApiClientTest {
                     )
                 }
             }
-        return DeviceApiClient(
-            serverUrl = serverUrl,
-            accountID = accountID,
-            httpClient = httpClient,
-        )
+        val config =
+            SdkConfig
+                .Builder(accountID)
+                .serverUrl(serverUrl)
+                .build()
+        return DeviceApiClient(config, httpClient)
     }
 }

@@ -1,5 +1,6 @@
 package com.maxmind.device.network
 
+import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.DeviceData
 import com.maxmind.device.model.ServerResponse
 import io.ktor.client.HttpClient
@@ -25,17 +26,17 @@ import kotlinx.serialization.json.put
  * HTTP client for communicating with MaxMind device API.
  *
  * This class handles the network communication for sending device data
- * to MaxMind servers.
+ * to MaxMind servers. By default, it uses a dual-request flow:
+ * 1. Send to IPv6 endpoint first
+ * 2. If IPv6 succeeds and returns ip_version=6, also send to IPv4 endpoint
  *
- * @param serverUrl Base URL for the MaxMind device API
- * @param accountID MaxMind account ID
- * @param enableLogging Whether to enable HTTP logging (default: false)
+ * This ensures both IP addresses are captured for the device.
+ *
+ * @param config SDK configuration
  * @param httpClient Optional HttpClient for testing (default: creates Android engine client)
  */
 internal class DeviceApiClient(
-    private val serverUrl: String,
-    private val accountID: Int,
-    enableLogging: Boolean = false,
+    private val config: SdkConfig,
     httpClient: HttpClient? = null,
 ) {
     private val json =
@@ -51,7 +52,7 @@ internal class DeviceApiClient(
                 json(this@DeviceApiClient.json)
             }
 
-            if (enableLogging) {
+            if (config.enableLogging) {
                 install(Logging) {
                     logger =
                         object : Logger {
@@ -65,17 +66,62 @@ internal class DeviceApiClient(
         }
 
     /**
-     * Sends device data to the MaxMind API.
+     * Sends device data to the MaxMind API using the dual-request flow.
+     *
+     * If using default servers (no custom URL set):
+     * 1. First sends to IPv6 endpoint
+     * 2. If IPv6 response indicates ip_version=6, also sends to IPv4 endpoint
+     *
+     * If a custom server URL is set, sends only to that URL.
      *
      * @param deviceData The device data to send
      * @return [Result] containing the server response with stored ID, or an error
      */
     suspend fun sendDeviceData(deviceData: DeviceData): Result<ServerResponse> =
+        if (config.useDefaultServers) {
+            sendWithDualRequest(deviceData)
+        } else {
+            sendToUrl(deviceData, config.customServerUrl!! + SdkConfig.ENDPOINT_PATH)
+        }
+
+    /**
+     * Sends device data using the dual-request flow (IPv6 first, then IPv4 if needed).
+     */
+    private suspend fun sendWithDualRequest(deviceData: DeviceData): Result<ServerResponse> {
+        // First, try IPv6
+        val ipv6Url = "https://${SdkConfig.DEFAULT_IPV6_HOST}${SdkConfig.ENDPOINT_PATH}"
+        val ipv6Result = sendToUrl(deviceData, ipv6Url)
+
+        if (ipv6Result.isFailure) {
+            return ipv6Result
+        }
+
+        val ipv6Response = ipv6Result.getOrNull()!!
+
+        // If we got an IPv6 response, also send to IPv4 to capture that IP
+        if (ipv6Response.ipVersion == IPV6) {
+            val ipv4Url = "https://${SdkConfig.DEFAULT_IPV4_HOST}${SdkConfig.ENDPOINT_PATH}"
+            // Send to IPv4 but don't fail the overall operation if it fails
+            // The stored_id from IPv6 is already valid
+            sendToUrl(deviceData, ipv4Url)
+        }
+
+        // Return the IPv6 response (which has the stored_id)
+        return ipv6Result
+    }
+
+    /**
+     * Sends device data to a specific URL.
+     */
+    internal suspend fun sendToUrl(
+        deviceData: DeviceData,
+        url: String,
+    ): Result<ServerResponse> =
         try {
             // Build request body with account_id at top level, merged with device data
             val requestBody =
                 buildJsonObject {
-                    put("account_id", accountID)
+                    put("account_id", config.accountID)
                     // Merge all DeviceData fields into the request
                     json.encodeToJsonElement(deviceData).jsonObject.forEach { (key, value) ->
                         put(key, value)
@@ -83,7 +129,7 @@ internal class DeviceApiClient(
                 }
 
             val response =
-                client.post("$serverUrl/android/device") {
+                client.post(url) {
                     contentType(ContentType.Application.Json)
                     setBody(requestBody)
                 }
@@ -118,5 +164,6 @@ internal class DeviceApiClient(
 
     private companion object {
         private const val TAG = "DeviceApiClient"
+        private const val IPV6 = 6
     }
 }
