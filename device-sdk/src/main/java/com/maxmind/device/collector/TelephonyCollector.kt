@@ -9,7 +9,9 @@ import com.maxmind.device.model.TelephonyInfo
  *
  * Collects basic telephony information that doesn't require runtime permissions.
  */
-internal class TelephonyCollector(private val context: Context) {
+internal class TelephonyCollector(
+    private val context: Context,
+) {
     /**
      * Collects current telephony information.
      *
@@ -28,8 +30,10 @@ internal class TelephonyCollector(private val context: Context) {
                 phoneType = telephonyManager.phoneType,
                 hasIccCard = telephonyManager.hasIccCard(),
             )
-        } catch (e: Exception) {
-            // Telephony info may fail on some devices
+        } catch (
+            e: SecurityException,
+        ) {
+            // Telephony info may fail on some devices due to permission issues
             null
         }
     }

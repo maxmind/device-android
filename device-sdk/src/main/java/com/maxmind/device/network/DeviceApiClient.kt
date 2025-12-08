@@ -26,11 +26,17 @@ import kotlinx.serialization.json.put
  *
  * This class handles the network communication for sending device data
  * to MaxMind servers.
+ *
+ * @param serverUrl Base URL for the MaxMind device API
+ * @param accountID MaxMind account ID
+ * @param enableLogging Whether to enable HTTP logging (default: false)
+ * @param httpClient Optional HttpClient for testing (default: creates Android engine client)
  */
 internal class DeviceApiClient(
     private val serverUrl: String,
     private val accountID: Int,
     enableLogging: Boolean = false,
+    httpClient: HttpClient? = null,
 ) {
     private val json =
         Json {
@@ -39,10 +45,10 @@ internal class DeviceApiClient(
             ignoreUnknownKeys = true
         }
 
-    private val httpClient =
-        HttpClient(Android) {
+    private val client: HttpClient =
+        httpClient ?: HttpClient(Android) {
             install(ContentNegotiation) {
-                json(json)
+                json(this@DeviceApiClient.json)
             }
 
             if (enableLogging) {
@@ -64,8 +70,8 @@ internal class DeviceApiClient(
      * @param deviceData The device data to send
      * @return [Result] containing the server response with stored ID, or an error
      */
-    suspend fun sendDeviceData(deviceData: DeviceData): Result<ServerResponse> {
-        return try {
+    suspend fun sendDeviceData(deviceData: DeviceData): Result<ServerResponse> =
+        try {
             // Build request body with account_id at top level, merged with device data
             val requestBody =
                 buildJsonObject {
@@ -74,6 +80,12 @@ internal class DeviceApiClient(
                     json.encodeToJsonElement(deviceData).jsonObject.forEach { (key, value) ->
                         put(key, value)
                     }
+                }
+
+            val response =
+                client.post("$serverUrl/android/device") {
+                    contentType(ContentType.Application.Json)
+                    setBody(requestBody)
                 }
 
             if (response.status.isSuccess()) {
@@ -89,18 +101,19 @@ internal class DeviceApiClient(
         ) {
             Result.failure(e)
         }
-    }
 
     /**
      * Exception thrown when API request fails.
      */
-    public class ApiException(message: String) : Exception(message)
+    class ApiException(
+        message: String,
+    ) : Exception(message)
 
     /**
      * Closes the HTTP client and releases resources.
      */
     fun close() {
-        httpClient.close()
+        client.close()
     }
 
     private companion object {

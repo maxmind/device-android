@@ -17,8 +17,8 @@ internal class CodecCollector {
      *
      * @return [CodecInfo] containing audio and video codec lists
      */
-    fun collect(): CodecInfo {
-        return try {
+    fun collect(): CodecInfo =
+        try {
             val codecList = MediaCodecList(MediaCodecList.ALL_CODECS)
             val codecInfos = codecList.codecInfos
 
@@ -45,19 +45,26 @@ internal class CodecCollector {
                 video = videoCodecs,
             )
         } catch (
-            @Suppress("TooGenericExceptionCaught", "SwallowedException")
-            e: Exception,
+            @Suppress("SwallowedException")
+            e: IllegalArgumentException,
+        ) {
+            // MediaCodecList may fail on some devices
+            CodecInfo()
+        } catch (
+            @Suppress("SwallowedException")
+            e: IllegalStateException,
+        ) {
+            // MediaCodecList may fail on some devices
+            CodecInfo()
+        } catch (
+            @Suppress("SwallowedException")
+            e: SecurityException,
         ) {
             // MediaCodecList may fail on some devices
             CodecInfo()
         }
-    }
 
-    private fun isAudioCodec(codecInfo: MediaCodecInfo): Boolean {
-        return codecInfo.supportedTypes.any { it.startsWith("audio/") }
-    }
+    private fun isAudioCodec(info: MediaCodecInfo): Boolean = info.supportedTypes.any { it.startsWith("audio/") }
 
-    private fun isVideoCodec(codecInfo: MediaCodecInfo): Boolean {
-        return codecInfo.supportedTypes.any { it.startsWith("video/") }
-    }
+    private fun isVideoCodec(info: MediaCodecInfo): Boolean = info.supportedTypes.any { it.startsWith("video/") }
 }
