@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -23,7 +22,6 @@ import kotlin.reflect.full.memberProperties
  * Main activity demonstrating the MaxMind Device Tracker usage.
  */
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
     private var logText = StringBuilder()
     private val json = Json { prettyPrint = true }
@@ -60,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnSend.isEnabled = false
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun initializeSdk() {
         try {
             if (DeviceTracker.isInitialized()) {
@@ -70,9 +69,11 @@ class MainActivity : AppCompatActivity() {
 
             // Create SDK configuration
             // Note: Replace with your actual MaxMind account ID
-            val config = SdkConfig.Builder(123456)  // Demo account ID - replace with real one
-                .enableLogging(true)
-                .build()
+            val config =
+                SdkConfig
+                    .Builder(123456) // Demo account ID - replace with real one
+                    .enableLogging(true)
+                    .build()
 
             // Initialize SDK
             DeviceTracker.initialize(this, config)
@@ -89,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("TooGenericExceptionCaught", "NestedBlockDepth")
     private fun collectDeviceData() {
         try {
             val sdk = DeviceTracker.getInstance()
@@ -100,19 +102,27 @@ class MainActivity : AppCompatActivity() {
             appendLog("  Brand: ${deviceData.build.brand}")
             appendLog("  OS Version: ${deviceData.build.osVersion}")
             appendLog("  SDK Version: ${deviceData.build.sdkVersion}")
-            appendLog("  Screen: ${deviceData.display.widthPixels}x${deviceData.display.heightPixels} (${deviceData.display.densityDpi}dpi)")
+            val display = deviceData.display
+            appendLog("  Screen: ${display.widthPixels}x${display.heightPixels} (${display.densityDpi}dpi)")
             appendLog("  Timestamp: ${deviceData.deviceTime}")
+            appendLog("")
+            appendLog("🔑 IDs:")
+            appendLog("  Stored ID: ${deviceData.storedID.id ?: "(none)"}")
+            appendLog("  MediaDRM ID: ${deviceData.deviceIDs.mediaDrmID ?: "(none)"}")
+            appendLog("  Android ID: ${deviceData.deviceIDs.androidID ?: "(none)"}")
             appendLog("")
 
             // Dynamically add collapsible sections for each property
             deviceData::class.memberProperties.forEach { prop ->
                 val value = prop.getter.call(deviceData)
                 if (value != null) {
-                    val content = try {
-                        json.encodeToString(serializer(prop.returnType), value)
-                    } catch (e: Exception) {
-                        value.toString()
-                    }
+                    @Suppress("SwallowedException")
+                    val content =
+                        try {
+                            json.encodeToString(serializer(prop.returnType), value)
+                        } catch (e: Exception) {
+                            value.toString()
+                        }
                     addCollapsibleSection(prop.name, content)
                 }
             }
@@ -131,24 +141,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun addCollapsibleSection(title: String, content: String) {
-        val header = TextView(this).apply {
-            text = "▶ $title"
-            setTypeface(typeface, Typeface.BOLD)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            setPadding(0, dpToPx(12), 0, dpToPx(4))
-            setTextColor(getColor(R.color.section_header))
-        }
+    private fun addCollapsibleSection(
+        title: String,
+        content: String,
+    ) {
+        val header =
+            TextView(this).apply {
+                text = "▶ $title"
+                setTypeface(typeface, Typeface.BOLD)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setPadding(0, dpToPx(12), 0, dpToPx(4))
+                setTextColor(getColor(R.color.section_header))
+            }
 
-        val contentView = TextView(this).apply {
-            text = content
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-            typeface = Typeface.MONOSPACE
-            setPadding(dpToPx(16), dpToPx(4), 0, dpToPx(12))
-            setTextColor(getColor(R.color.section_content))
-            setBackgroundColor(getColor(R.color.surface))
-            visibility = View.GONE
-        }
+        val contentView =
+            TextView(this).apply {
+                text = content
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                typeface = Typeface.MONOSPACE
+                setPadding(dpToPx(16), dpToPx(4), 0, dpToPx(12))
+                setTextColor(getColor(R.color.section_content))
+                setBackgroundColor(getColor(R.color.surface))
+                visibility = View.GONE
+            }
 
         header.setOnClickListener {
             if (contentView.visibility == View.GONE) {
@@ -165,12 +180,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun dpToPx(dp: Int): Int =
-        TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp.toFloat(),
-            resources.displayMetrics
-        ).toInt()
+        TypedValue
+            .applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp.toFloat(),
+                resources.displayMetrics,
+            ).toInt()
 
+    @Suppress("TooGenericExceptionCaught")
     private fun sendDeviceData() {
         try {
             val sdk = DeviceTracker.getInstance()
@@ -188,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                         appendLog("✗ $errorMsg")
                         Log.e(TAG, errorMsg, error)
                         showMessage(errorMsg)
-                    }
+                    },
                 )
             }
         } catch (e: Exception) {
