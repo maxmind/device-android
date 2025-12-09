@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.Display
 import com.maxmind.device.model.BuildInfo
 import com.maxmind.device.model.DeviceData
@@ -28,11 +29,56 @@ import java.util.TimeZone
  *
  * @param context Application context for accessing system services
  * @param storedIDStorage Optional storage for server-generated stored IDs
+ * @param enableLogging Whether to log collection failures (defaults to false)
  */
 internal class DeviceDataCollector(
     private val context: Context,
     storedIDStorage: StoredIDStorage? = null,
+    private val enableLogging: Boolean = false,
 ) {
+    private companion object {
+        private const val TAG = "DeviceDataCollector"
+
+        // Fallback values for when collection fails
+        private val BUILD_INFO_FALLBACK = BuildInfo(
+            fingerprint = "",
+            manufacturer = "",
+            model = "",
+            brand = "",
+            device = "",
+            product = "",
+            board = "",
+            hardware = "",
+            osVersion = "",
+            sdkVersion = 0,
+        )
+
+        private val DISPLAY_INFO_FALLBACK = DisplayInfo(
+            widthPixels = 0,
+            heightPixels = 0,
+            densityDpi = 0,
+            density = 0f,
+        )
+
+        private val HARDWARE_INFO_FALLBACK = HardwareInfo(
+            cpuCores = 0,
+            totalMemoryBytes = 0L,
+            totalStorageBytes = 0L,
+        )
+
+        private val INSTALLATION_INFO_FALLBACK = InstallationInfo(
+            firstInstallTime = 0L,
+            lastUpdateTime = 0L,
+            versionCode = 0L,
+        )
+
+        private val LOCALE_INFO_FALLBACK = LocaleInfo(
+            language = "",
+            country = "",
+            timezone = "",
+        )
+    }
+
     private val storedIDCollector = storedIDStorage?.let { StoredIDCollector(it) }
     private val deviceIDsCollector = DeviceIDsCollector(context)
     private val gpuCollector = GpuCollector()
@@ -49,17 +95,37 @@ internal class DeviceDataCollector(
     private val webViewCollector = WebViewCollector(context)
 
     /**
+     * Safely executes a collection block, returning a fallback value on failure.
+     *
+     * This ensures partial data collection even if individual subsystems fail.
+     *
+     * @param fallback The value to return if collection fails
+     * @param block The collection block to execute
+     * @return The collected value or fallback on failure
+     */
+    @Suppress("TooGenericExceptionCaught")
+    private inline fun <T> collectSafe(fallback: T, block: () -> T): T =
+        try {
+            block()
+        } catch (e: Exception) {
+            if (enableLogging) {
+                Log.w(TAG, "Collection failed: ${e.message}", e)
+            }
+            fallback
+        }
+
+    /**
      * Collects current device data.
      *
      * @return [DeviceData] containing collected device information
      */
-    fun collect(): DeviceData =
+    public fun collect(): DeviceData =
         DeviceData(
             storedID = storedIDCollector?.collect() ?: StoredID(),
             deviceIDs = deviceIDsCollector.collect(),
-            build = collectBuildInfo(),
-            display = collectDisplayInfo(),
-            hardware = collectHardwareInfo(),
+            build = collectSafe(BUILD_INFO_FALLBACK) { collectBuildInfo() },
+            display = collectSafe(DISPLAY_INFO_FALLBACK) { collectDisplayInfo() },
+            hardware = collectSafe(HARDWARE_INFO_FALLBACK) { collectHardwareInfo() },
             gpu = gpuCollector.collect(),
             audio = audioCollector.collect(),
             sensors = sensorCollector.collect(),
@@ -67,14 +133,14 @@ internal class DeviceDataCollector(
             codecs = codecCollector.collect(),
             systemFeatures = systemFeaturesCollector.collect(),
             network = networkCollector.collect(),
-            installation = collectInstallationInfo(),
+            installation = collectSafe(INSTALLATION_INFO_FALLBACK) { collectInstallationInfo() },
             settings = settingsCollector.collect(),
             behavior = behaviorCollector.collect(),
             telephony = telephonyCollector.collect(),
             fonts = fontCollector.collect(),
-            locale = collectLocaleInfo(),
-            // Timezone offset in minutes
-            timezoneOffset = TimeZone.getDefault().rawOffset / 60000,
+            locale = collectSafe(LOCALE_INFO_FALLBACK) { collectLocaleInfo() },
+            // Timezone offset in minutes (uses getOffset to account for DST)
+            timezoneOffset = TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60000,
             deviceTime = System.currentTimeMillis(),
             webViewUserAgent = webViewCollector.collectUserAgent(),
         )
