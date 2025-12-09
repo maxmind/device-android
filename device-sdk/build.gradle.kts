@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ktlint)
     id("maven-publish")
     id("signing")
+    id("tech.apter.junit5.jupiter.robolectric-extension-gradle-plugin") version "0.9.0"
 }
 
 android {

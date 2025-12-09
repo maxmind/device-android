@@ -22,9 +22,14 @@ internal class GpuCollector {
      */
     @Suppress("LongMethod", "ReturnCount", "CyclomaticComplexMethod")
     fun collect(): GpuInfo? {
-        var display: EGLDisplay = EGL14.EGL_NO_DISPLAY
-        var context: EGLContext = EGL14.EGL_NO_CONTEXT
-        var surface: EGLSurface = EGL14.EGL_NO_SURFACE
+        // EGL14 constants may be null in test environments (e.g., Robolectric)
+        val noDisplay = EGL14.EGL_NO_DISPLAY ?: return null
+        val noContext = EGL14.EGL_NO_CONTEXT ?: return null
+        val noSurface = EGL14.EGL_NO_SURFACE ?: return null
+
+        var display: EGLDisplay = noDisplay
+        var context: EGLContext = noContext
+        var surface: EGLSurface = noSurface
 
         return try {
             // Initialize EGL display
@@ -128,17 +133,17 @@ internal class GpuCollector {
             null
         } finally {
             // Clean up EGL resources
-            if (display != EGL14.EGL_NO_DISPLAY) {
+            if (display != noDisplay) {
                 EGL14.eglMakeCurrent(
                     display,
-                    EGL14.EGL_NO_SURFACE,
-                    EGL14.EGL_NO_SURFACE,
-                    EGL14.EGL_NO_CONTEXT,
+                    noSurface,
+                    noSurface,
+                    noContext,
                 )
-                if (context != EGL14.EGL_NO_CONTEXT) {
+                if (context != noContext) {
                     EGL14.eglDestroyContext(display, context)
                 }
-                if (surface != EGL14.EGL_NO_SURFACE) {
+                if (surface != noSurface) {
                     EGL14.eglDestroySurface(display, surface)
                 }
                 EGL14.eglTerminate(display)
