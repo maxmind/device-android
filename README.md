@@ -42,7 +42,7 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val config = SdkConfig.Builder("your-api-key")
+        val config = SdkConfig.Builder(123456)  // Your MaxMind account ID
             .enableLogging(BuildConfig.DEBUG)
             .build()
 
@@ -98,7 +98,7 @@ Collect device data without sending:
 
 ```kotlin
 val deviceData = DeviceTracker.getInstance().collectDeviceData()
-println("Device: ${deviceData.manufacturer} ${deviceData.model}")
+println("Device: ${deviceData.build.manufacturer} ${deviceData.build.model}")
 ```
 
 ## Configuration Options
@@ -106,19 +106,19 @@ println("Device: ${deviceData.manufacturer} ${deviceData.model}")
 ### SdkConfig.Builder
 
 ```kotlin
-val config = SdkConfig.Builder("your-api-key")
+val config = SdkConfig.Builder(123456)              // Your MaxMind account ID
     .serverUrl("https://custom-server.com/api")  // Optional: Custom server URL
     .enableLogging(true)                          // Optional: Enable debug logging
     .collectionInterval(60_000)                   // Optional: Auto-collect every 60 seconds
     .build()
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `apiKey` | String | *required* | Your MaxMind API key |
-| `serverUrl` | String | `https://device-api.maxmind.com/v1` | MaxMind API endpoint |
-| `enableLogging` | Boolean | `false` | Enable debug logging |
-| `collectionIntervalMs` | Long | `0` | Auto-collection interval (0 = disabled) |
+| Builder Method            | Type    | Default         | Description                                             |
+| ------------------------- | ------- | --------------- | ------------------------------------------------------- |
+| `Builder(accountID)`      | Int     | _required_      | Your MaxMind account ID                                 |
+| `.serverUrl(url)`         | String  | Default servers | Custom server URL                                       |
+| `.enableLogging(enabled)` | Boolean | `false`         | Enable debug logging                                    |
+| `.collectionInterval(ms)` | Long    | `0`             | Auto-collection interval in milliseconds (0 = disabled) |
 
 ## Permissions
 
@@ -128,22 +128,6 @@ The SDK requires the following permissions (automatically included):
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 ```
-
-## Collected Data
-
-The SDK collects the following device information:
-
-- **Device ID**: Optional unique identifier
-- **Manufacturer**: Device manufacturer (e.g., "Samsung", "Google")
-- **Model**: Device model name
-- **Brand**: Device brand name
-- **OS Version**: Android version
-- **SDK Version**: Android SDK/API level
-- **Screen Resolution**: Display resolution
-- **Screen Density**: Display density
-- **Timestamp**: Collection timestamp
-
-All data collection respects user privacy and Android security policies.
 
 ## ProGuard / R8
 
@@ -237,16 +221,8 @@ at your option. Copyright 2025 MaxMind, Inc.
 
 ## Support
 
-- Email: support@maxmind.com
-- Issues: [GitHub Issues](https://github.com/maxmind/device-android/issues)
-- Docs: [API Documentation](https://maxmind.github.io/device-android/)
+For support, please visit
+[maxmind.com/en/company/contact-us](https://www.maxmind.com/en/company/contact-us).
 
-## Changelog
-
-### 0.1.0-SNAPSHOT (2025-10-28)
-
-- Initial release
-- Basic device data collection
-- HTTP API integration
-- Automatic collection intervals
-- Java compatibility
+If you find a bug or have a feature request, please open an issue on
+[GitHub](https://github.com/maxmind/device-android/issues).
