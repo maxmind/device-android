@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary colors - Teal -->
+    <color name="primary">#FF00897B</color>
+    <color name="primary_dark">#FF00695C</color>
+    <color name="primary_light">#FF4DB6AC</color>
+
+    <!-- Accent -->
+    <color name="accent">#FF26A69A</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#DE000000</color>
+    <color name="text_secondary">#8A000000</color>
+    <color name="text_on_primary">#FFFFFFFF</color>
+
+    <!-- Section header colors -->
+    <color name="section_header">#FF00796B</color>
+    <color name="section_content">#FF37474F</color>
+
+    <!-- Background -->
+    <color name="surface">#FFFAFAFA</color>
+    <color name="card_background">#FFFFFFFF</color>
+
+    <!-- Legacy colors (keep for compatibility) -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

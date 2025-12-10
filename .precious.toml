@@ -1,0 +1,28 @@
+[commands.ktlint]
+type = "both"
+cmd = ["./gradlew"]
+lint-flags = [":device-sdk:ktlintCheck"]
+tidy-flags = [":device-sdk:ktlintFormat"]
+ok-exit-codes = 0
+invoke = "once"
+path-args = "none"
+include = ["**/*.kt", "**/*.kts"]
+expect-stderr = true
+
+[commands.prettier-markdown]
+type = "both"
+include = ["**/*.md"]
+exclude = [".idea/**", "build/**"]
+cmd = ["npx", "prettier", "--parser", "markdown", "--prose-wrap", "always"]
+lint-flags = ["--check"]
+tidy-flags = ["--write"]
+ok-exit-codes = 0
+lint-failure-exit-codes = 1
+ignore-stderr = ["Code style issues", "npm warn exec"]
+
+[commands.yamllint]
+type = "lint"
+cmd = ["yamllint"]
+ok-exit-codes = 0
+include = ["**/*.yml", "**/*.yaml"]
+exclude = [".idea/**", "build/**"]
