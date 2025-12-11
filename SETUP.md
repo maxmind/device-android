@@ -188,17 +188,32 @@ device-android/
 └── README.md            # Main documentation
 ```
 
-## Local Development Server
+## Sample App Configuration
 
-The sample app can be configured to connect to a local development server
-instead of the production MaxMind servers. This is useful for testing the SDK
-against a local backend.
+The sample app requires configuration via `local.properties` (gitignored).
 
-### Quick Start
+### Required Configuration
+
+Add your MaxMind account ID to `local.properties`:
+
+```properties
+maxmind.account.id=123456
+```
+
+Without this, the sample app will show an error when you try to initialize the
+SDK.
+
+### Local Development Server
+
+The sample app can optionally connect to a local development server instead of
+the production MaxMind servers.
+
+#### Quick Start
 
 1. **Add to `local.properties`**:
 
    ```properties
+   maxmind.account.id=123456
    debug.server.url=https://localhost:8443
    debug.ca.cert=/path/to/your/ca.crt
    ```
@@ -219,13 +234,14 @@ against a local backend.
 
 Add these to `local.properties` (gitignored):
 
-| Property           | Description                                  |
-| ------------------ | -------------------------------------------- |
-| `debug.server.url` | Server URL (e.g., `https://localhost:8443`)  |
-| `debug.ca.cert`    | Path to CA certificate for self-signed HTTPS |
+| Property             | Required | Description                                  |
+| -------------------- | -------- | -------------------------------------------- |
+| `maxmind.account.id` | Yes      | Your MaxMind account ID                      |
+| `debug.server.url`   | No       | Server URL (e.g., `https://localhost:8443`)  |
+| `debug.ca.cert`      | No       | Path to CA certificate for self-signed HTTPS |
 
-Both properties are optional. Without them, the sample app connects to
-production MaxMind servers.
+Without the optional debug properties, the sample app connects to production
+MaxMind servers.
 
 ### ADB Reverse Port Forwarding
 

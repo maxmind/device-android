@@ -67,11 +67,18 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
+            // Check that account ID is configured
+            if (BuildConfig.MAXMIND_ACCOUNT_ID == 0) {
+                val errorMsg = "Account ID not configured. Add maxmind.account.id to local.properties"
+                appendLog("✗ $errorMsg")
+                showMessage(errorMsg)
+                return
+            }
+
             // Create SDK configuration
-            // Note: Replace with your actual MaxMind account ID
             val configBuilder =
                 SdkConfig
-                    .Builder(123456) // Demo account ID - replace with real one
+                    .Builder(BuildConfig.MAXMIND_ACCOUNT_ID)
                     .enableLogging(true)
 
             // Use debug server URL if configured in local.properties
