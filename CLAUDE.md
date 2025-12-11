@@ -70,6 +70,21 @@ Follow Kotlin conventions (kotlinlang.org/docs/coding-conventions.html):
 # Output: device-sdk/build/dokka/
 ```
 
+### Pre-commit Formatting
+
+This project uses [precious](https://github.com/houseabsolute/precious) for
+pre-commit hooks. Before committing, run:
+
+```bash
+# Tidy all staged files (fixes formatting issues)
+precious tidy -g
+
+# Then stage the tidied files and commit
+git add -u && git commit
+```
+
+If a commit fails due to formatting, run `precious tidy -g` and retry.
+
 ### Publishing
 
 ```bash
