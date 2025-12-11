@@ -102,3 +102,6 @@ inputs.csv
 summary.md
 plan.md
 build-log.txt
+
+# Generated debug CA certificate (configured via local.properties)
+sample/src/main/res/raw/debug_ca.crt

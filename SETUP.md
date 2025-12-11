@@ -188,6 +188,98 @@ device-android/
 └── README.md            # Main documentation
 ```
 
+## Local Development Server
+
+The sample app can be configured to connect to a local development server
+instead of the production MaxMind servers. This is useful for testing the SDK
+against a local backend.
+
+### Quick Start
+
+1. **Add to `local.properties`**:
+
+   ```properties
+   debug.server.url=https://localhost:8443
+   debug.ca.cert=/path/to/your/ca.crt
+   ```
+
+2. **Set up ADB reverse port forwarding**:
+
+   ```bash
+   adb reverse tcp:8443 tcp:8443
+   ```
+
+3. **Build and install**:
+
+   ```bash
+   ./gradlew :sample:installDebug
+   ```
+
+### Configuration Options
+
+Add these to `local.properties` (gitignored):
+
+| Property           | Description                                  |
+| ------------------ | -------------------------------------------- |
+| `debug.server.url` | Server URL (e.g., `https://localhost:8443`)  |
+| `debug.ca.cert`    | Path to CA certificate for self-signed HTTPS |
+
+Both properties are optional. Without them, the sample app connects to
+production MaxMind servers.
+
+### ADB Reverse Port Forwarding
+
+When running the sample app on a physical device, `localhost` on the device
+refers to the device itself, not your development machine. ADB reverse creates a
+tunnel:
+
+```bash
+# Forward device's localhost:8443 to your machine's localhost:8443
+adb reverse tcp:8443 tcp:8443
+
+# Verify the forwarding is active
+adb reverse --list
+
+# Remove forwarding when done
+adb reverse --remove tcp:8443
+```
+
+**Note:** You must re-run `adb reverse` each time you reconnect the device.
+
+For emulators, you can alternatively use `10.0.2.2` which automatically routes
+to the host machine's localhost.
+
+### How Certificate Bundling Works
+
+When `debug.ca.cert` is configured and the file exists, the build system:
+
+1. Copies the certificate to `sample/src/main/res/raw/debug_ca.crt` (gitignored)
+2. Generates a `network_security_config.xml` that trusts the bundled certificate
+3. Sets `BuildConfig.DEBUG_SERVER_URL` for the app to use
+
+When not configured, the sample app behaves normally with the default network
+security config.
+
+### Troubleshooting
+
+**"Trust anchor for certification path not found"**
+
+- Ensure `debug.ca.cert` points to a valid CA certificate file (not a leaf cert)
+- Rebuild: `./gradlew :sample:clean :sample:installDebug`
+- Verify the certificate was copied: `ls sample/src/main/res/raw/`
+
+**Connection refused / timeout**
+
+- Verify ADB reverse is active: `adb reverse --list`
+- Ensure your local server is running on the correct port
+- Check that the server binds to `0.0.0.0` or `localhost`
+
+**Changes not taking effect**
+
+- Run a clean build: `./gradlew :sample:clean :sample:installDebug`
+- The network security config is generated at build time based on
+  `local.properties`
+
 ## Support
 
 If you encounter issues:

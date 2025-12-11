@@ -69,11 +69,17 @@ class MainActivity : AppCompatActivity() {
 
             // Create SDK configuration
             // Note: Replace with your actual MaxMind account ID
-            val config =
+            val configBuilder =
                 SdkConfig
                     .Builder(123456) // Demo account ID - replace with real one
                     .enableLogging(true)
-                    .build()
+
+            // Use debug server URL if configured in local.properties
+            if (BuildConfig.DEBUG_SERVER_URL.isNotEmpty()) {
+                configBuilder.serverUrl(BuildConfig.DEBUG_SERVER_URL)
+            }
+
+            val config = configBuilder.build()
 
             // Initialize SDK
             DeviceTracker.initialize(this, config)
