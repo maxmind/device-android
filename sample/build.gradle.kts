@@ -16,6 +16,7 @@ if (localPropertiesFile.exists()) {
 }
 val debugServerUrl = localProperties.getProperty("debug.server.url", "")
 val debugCaCertPath = localProperties.getProperty("debug.ca.cert", "")
+val accountId = localProperties.getProperty("maxmind.account.id", "0")
 
 android {
     namespace = "com.maxmind.device.sample"
@@ -40,6 +41,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "DEBUG_SERVER_URL", "\"$debugServerUrl\"")
+        buildConfigField("int", "MAXMIND_ACCOUNT_ID", accountId)
     }
 
     buildTypes {
