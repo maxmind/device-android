@@ -44,4 +44,7 @@ public data class DeviceData(
     val deviceTime: Long = System.currentTimeMillis(),
     @SerialName("webview_user_agent")
     val webViewUserAgent: String? = null,
+    // Request timing for proxy detection (set by DeviceApiClient on IPv4 request)
+    @SerialName("request_duration")
+    val requestDuration: Float? = null,
 )

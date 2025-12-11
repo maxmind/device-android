@@ -19,6 +19,7 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.float
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -328,6 +329,99 @@ internal class DeviceApiClientTest {
             client.close()
         }
 
+    // ========== Dual Request / Request Duration Tests ==========
+
+    @Test
+    internal fun `dual request includes request_duration only on second request`() =
+        runTest {
+            val capturedRequests = mutableListOf<Pair<String, String>>()
+            var requestCount = 0
+
+            val mockEngine =
+                MockEngine { request ->
+                    requestCount++
+                    capturedRequests.add(request.url.toString() to (request.body as TextContent).text)
+                    respond(
+                        content =
+                            if (requestCount == 1) {
+                                """{"stored_id":"test","ip_version":6}"""
+                            } else {
+                                """{"stored_id":"test"}"""
+                            },
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            val client = createTestClientWithDefaultServers(mockEngine)
+
+            client.sendDeviceData(testDeviceData)
+
+            assertEquals(2, capturedRequests.size)
+
+            // First request (IPv6) should NOT have request_duration
+            val firstRequestJson = json.parseToJsonElement(capturedRequests[0].second).jsonObject
+            assertNull(firstRequestJson["request_duration"])
+
+            // Second request (IPv4) SHOULD have request_duration
+            val secondRequestJson = json.parseToJsonElement(capturedRequests[1].second).jsonObject
+            assertNotNull(secondRequestJson["request_duration"])
+            assertTrue(secondRequestJson["request_duration"]!!.jsonPrimitive.float >= 0)
+            client.close()
+        }
+
+    @Test
+    internal fun `dual request sends to correct IPv6 and IPv4 endpoints`() =
+        runTest {
+            val capturedUrls = mutableListOf<String>()
+            var requestCount = 0
+
+            val mockEngine =
+                MockEngine { request ->
+                    requestCount++
+                    capturedUrls.add(request.url.toString())
+                    respond(
+                        content =
+                            if (requestCount == 1) {
+                                """{"stored_id":"test","ip_version":6}"""
+                            } else {
+                                """{"stored_id":"test"}"""
+                            },
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            val client = createTestClientWithDefaultServers(mockEngine)
+
+            client.sendDeviceData(testDeviceData)
+
+            assertEquals(2, capturedUrls.size)
+            assertTrue(capturedUrls[0].contains("d-ipv6.mmapiws.com"))
+            assertTrue(capturedUrls[1].contains("d-ipv4.mmapiws.com"))
+            client.close()
+        }
+
+    @Test
+    internal fun `dual request skips IPv4 when ip_version is not 6`() =
+        runTest {
+            var requestCount = 0
+
+            val mockEngine =
+                MockEngine { _ ->
+                    requestCount++
+                    respond(
+                        content = """{"stored_id":"test","ip_version":4}""",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            val client = createTestClientWithDefaultServers(mockEngine)
+
+            client.sendDeviceData(testDeviceData)
+
+            assertEquals(1, requestCount)
+            client.close()
+        }
+
     // ========== Helper Functions ==========
 
     private fun createTestClient(
@@ -351,6 +445,29 @@ internal class DeviceApiClientTest {
             SdkConfig
                 .Builder(accountID)
                 .serverUrl(serverUrl)
+                .build()
+        return DeviceApiClient(config, httpClient)
+    }
+
+    private fun createTestClientWithDefaultServers(
+        mockEngine: MockEngine,
+        accountID: Int = 99999,
+    ): DeviceApiClient {
+        val httpClient =
+            HttpClient(mockEngine) {
+                install(ContentNegotiation) {
+                    json(
+                        Json {
+                            prettyPrint = true
+                            isLenient = true
+                            ignoreUnknownKeys = true
+                        },
+                    )
+                }
+            }
+        val config =
+            SdkConfig
+                .Builder(accountID)
                 .build()
         return DeviceApiClient(config, httpClient)
     }

@@ -88,9 +88,11 @@ internal class DeviceApiClient(
      * Sends device data using the dual-request flow (IPv6 first, then IPv4 if needed).
      */
     private suspend fun sendWithDualRequest(deviceData: DeviceData): Result<ServerResponse> {
-        // First, try IPv6
+        // First, try IPv6 - measure duration for proxy detection
         val ipv6Url = "https://${SdkConfig.DEFAULT_IPV6_HOST}${SdkConfig.ENDPOINT_PATH}"
+        val startTime = System.currentTimeMillis()
         val ipv6Result = sendToUrl(deviceData, ipv6Url)
+        val requestDurationMs = System.currentTimeMillis() - startTime
 
         if (ipv6Result.isFailure) {
             return ipv6Result
@@ -98,12 +100,16 @@ internal class DeviceApiClient(
 
         val ipv6Response = ipv6Result.getOrNull()!!
 
-        // If we got an IPv6 response, also send to IPv4 to capture that IP
+        // If we got an IPv6 response, also send to IPv4 with the request duration
         if (ipv6Response.ipVersion == IPV6) {
             val ipv4Url = "https://${SdkConfig.DEFAULT_IPV4_HOST}${SdkConfig.ENDPOINT_PATH}"
+            val dataWithDuration =
+                deviceData.copy(
+                    requestDuration = requestDurationMs.toFloat(),
+                )
             // Send to IPv4 but don't fail the overall operation if it fails
             // The stored_id from IPv6 is already valid
-            sendToUrl(deviceData, ipv4Url)
+            sendToUrl(dataWithDuration, ipv4Url)
         }
 
         // Return the IPv6 response (which has the stored_id)
