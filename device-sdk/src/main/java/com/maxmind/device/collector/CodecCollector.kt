@@ -52,26 +52,8 @@ internal class CodecCollector(
                 video = videoCodecs,
             )
         } catch (
-            @Suppress("SwallowedException")
-            e: IllegalArgumentException,
-        ) {
-            // MediaCodecList may fail on some devices
-            if (enableLogging) {
-                Log.d(TAG, "Failed to collect codec info: ${e.message}")
-            }
-            CodecInfo()
-        } catch (
-            @Suppress("SwallowedException")
-            e: IllegalStateException,
-        ) {
-            // MediaCodecList may fail on some devices
-            if (enableLogging) {
-                Log.d(TAG, "Failed to collect codec info: ${e.message}")
-            }
-            CodecInfo()
-        } catch (
-            @Suppress("SwallowedException")
-            e: SecurityException,
+            @Suppress("TooGenericExceptionCaught", "SwallowedException")
+            e: Exception,
         ) {
             // MediaCodecList may fail on some devices
             if (enableLogging) {
