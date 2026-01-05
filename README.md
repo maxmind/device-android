@@ -170,46 +170,14 @@ To run the sample app:
 
 Documentation will be generated in `device-sdk/build/dokka/`.
 
-### Code Quality Checks
-
-```bash
-# Run Detekt
-./gradlew detekt
-
-# Run ktlint
-./gradlew ktlintCheck
-
-# Auto-format with ktlint
-./gradlew ktlintFormat
-```
-
-## Publishing
-
-### Maven Central
-
-The SDK is configured for Maven Central publishing:
-
-```bash
-./gradlew :device-sdk:publishReleasePublicationToMavenCentralRepository
-```
-
-Required credentials (set in `local.properties` or environment variables):
-
-```properties
-signing.keyId=YOUR_KEY_ID
-signing.password=YOUR_KEY_PASSWORD
-signing.secretKeyRingFile=/path/to/secring.gpg
-mavenCentralUsername=YOUR_USERNAME
-mavenCentralPassword=YOUR_PASSWORD
-```
-
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and code quality checks
-5. Submit a pull request
+2. Set up your development environment (see [SETUP.md](SETUP.md))
+3. Create a feature branch
+4. Make your changes
+5. Run tests and code quality checks
+6. Submit a pull request
 
 ## License
 

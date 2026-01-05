@@ -86,6 +86,24 @@ Replace `/path/to/your/Android/Sdk` with your actual SDK location:
 ./gradlew dokkaHtml
 ```
 
+## Publishing to Maven Central
+
+The SDK is configured for Maven Central publishing:
+
+```bash
+./gradlew :device-sdk:publishReleasePublicationToMavenCentralRepository
+```
+
+Required credentials (set in `local.properties` or environment variables):
+
+```properties
+signing.keyId=YOUR_KEY_ID
+signing.password=YOUR_KEY_PASSWORD
+signing.secretKeyRingFile=/path/to/secring.gpg
+mavenCentralUsername=YOUR_USERNAME
+mavenCentralPassword=YOUR_PASSWORD
+```
+
 ## Environment Variables
 
 Set these in your shell profile (`~/.bashrc` or `~/.zshrc`):
