@@ -1,6 +1,7 @@
 package com.maxmind.device.collector
 
 import android.content.Context
+import android.util.Log
 
 /**
  * Collects system feature declarations from PackageManager.
@@ -10,7 +11,12 @@ import android.content.Context
  */
 internal class SystemFeaturesCollector(
     private val context: Context,
+    private val enableLogging: Boolean = false,
 ) {
+    private companion object {
+        private const val TAG = "SystemFeaturesCollector"
+    }
+
     /**
      * Collects the list of system features.
      *
@@ -26,6 +32,9 @@ internal class SystemFeaturesCollector(
             e: Exception,
         ) {
             // PackageManager may throw on some devices
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect system features: ${e.message}")
+            }
             emptyList()
         }
 }

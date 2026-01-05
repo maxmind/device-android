@@ -6,6 +6,7 @@ import android.net.NetworkCapabilities
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.util.Log
 import com.maxmind.device.model.NetworkInfo
 
 /**
@@ -15,6 +16,7 @@ import com.maxmind.device.model.NetworkInfo
  */
 internal class NetworkCollector(
     private val context: Context,
+    private val enableLogging: Boolean = false,
 ) {
     /**
      * Collects current network information.
@@ -57,6 +59,9 @@ internal class NetworkCollector(
             e: Exception,
         ) {
             // Network info may fail on some devices or when permissions are missing
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect network info: ${e.message}")
+            }
             null
         }
     }
@@ -95,6 +100,7 @@ internal class NetworkCollector(
     }
 
     internal companion object {
+        private const val TAG = "NetworkCollector"
         const val CONNECTION_TYPE_WIFI = "wifi"
         const val CONNECTION_TYPE_CELLULAR = "cellular"
         const val CONNECTION_TYPE_ETHERNET = "ethernet"

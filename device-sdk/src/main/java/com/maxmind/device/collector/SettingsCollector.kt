@@ -2,6 +2,7 @@ package com.maxmind.device.collector
 
 import android.content.Context
 import android.provider.Settings
+import android.util.Log
 import com.maxmind.device.model.SystemSettings
 
 /**
@@ -12,7 +13,12 @@ import com.maxmind.device.model.SystemSettings
  */
 internal class SettingsCollector(
     private val context: Context,
+    private val enableLogging: Boolean = false,
 ) {
+    private companion object {
+        private const val TAG = "SettingsCollector"
+    }
+
     /**
      * Collects system settings.
      *
@@ -34,6 +40,9 @@ internal class SettingsCollector(
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,
         ) {
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect screen timeout: ${e.message}")
+            }
             null
         }
 
@@ -47,6 +56,9 @@ internal class SettingsCollector(
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,
         ) {
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect development settings enabled: ${e.message}")
+            }
             null
         }
 
@@ -57,6 +69,9 @@ internal class SettingsCollector(
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,
         ) {
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect ADB enabled: ${e.message}")
+            }
             null
         }
 
@@ -70,6 +85,9 @@ internal class SettingsCollector(
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,
         ) {
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect animator duration scale: ${e.message}")
+            }
             null
         }
 
@@ -80,6 +98,9 @@ internal class SettingsCollector(
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,
         ) {
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect boot count: ${e.message}")
+            }
             null
         }
 }

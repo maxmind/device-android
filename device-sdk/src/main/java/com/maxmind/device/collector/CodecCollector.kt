@@ -2,6 +2,7 @@ package com.maxmind.device.collector
 
 import android.media.MediaCodecInfo
 import android.media.MediaCodecList
+import android.util.Log
 import com.maxmind.device.model.CodecDetail
 import com.maxmind.device.model.CodecInfo
 
@@ -11,7 +12,13 @@ import com.maxmind.device.model.CodecInfo
  * Enumerates all audio and video codecs available on the device
  * using MediaCodecList.
  */
-internal class CodecCollector {
+internal class CodecCollector(
+    private val enableLogging: Boolean = false,
+) {
+    private companion object {
+        private const val TAG = "CodecCollector"
+    }
+
     /**
      * Collects information about all available codecs.
      *
@@ -49,18 +56,27 @@ internal class CodecCollector {
             e: IllegalArgumentException,
         ) {
             // MediaCodecList may fail on some devices
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect codec info: ${e.message}")
+            }
             CodecInfo()
         } catch (
             @Suppress("SwallowedException")
             e: IllegalStateException,
         ) {
             // MediaCodecList may fail on some devices
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect codec info: ${e.message}")
+            }
             CodecInfo()
         } catch (
             @Suppress("SwallowedException")
             e: SecurityException,
         ) {
             // MediaCodecList may fail on some devices
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect codec info: ${e.message}")
+            }
             CodecInfo()
         }
 

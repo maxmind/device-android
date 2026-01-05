@@ -2,6 +2,7 @@ package com.maxmind.device.collector
 
 import android.content.Context
 import android.telephony.TelephonyManager
+import android.util.Log
 import com.maxmind.device.model.TelephonyInfo
 
 /**
@@ -11,7 +12,12 @@ import com.maxmind.device.model.TelephonyInfo
  */
 internal class TelephonyCollector(
     private val context: Context,
+    private val enableLogging: Boolean = false,
 ) {
+    private companion object {
+        private const val TAG = "TelephonyCollector"
+    }
+
     /**
      * Collects current telephony information.
      *
@@ -34,6 +40,9 @@ internal class TelephonyCollector(
             e: SecurityException,
         ) {
             // Telephony info may fail on some devices due to permission issues
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect telephony info: ${e.message}")
+            }
             null
         }
     }

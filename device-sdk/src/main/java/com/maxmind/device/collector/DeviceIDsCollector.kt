@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.MediaDrm
 import android.provider.Settings
 import android.util.Base64
+import android.util.Log
 import com.maxmind.device.model.DeviceIDs
 import java.util.UUID
 
@@ -17,6 +18,7 @@ import java.util.UUID
  */
 internal class DeviceIDsCollector(
     private val context: Context,
+    private val enableLogging: Boolean = false,
 ) {
     /**
      * Collects device-generated identifiers.
@@ -51,6 +53,9 @@ internal class DeviceIDsCollector(
             e: Exception,
         ) {
             // MediaDRM may not be available on all devices (e.g., emulators, some custom ROMs)
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect MediaDRM ID: ${e.message}")
+            }
             null
         }
 
@@ -72,10 +77,15 @@ internal class DeviceIDsCollector(
             e: Exception,
         ) {
             // Settings.Secure may throw on some custom ROMs or restricted contexts
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect Android ID: ${e.message}")
+            }
             null
         }
 
     internal companion object {
+        private const val TAG = "DeviceIDsCollector"
+
         /**
          * UUID for Widevine DRM system.
          * This is a well-known UUID that identifies the Widevine DRM provider.

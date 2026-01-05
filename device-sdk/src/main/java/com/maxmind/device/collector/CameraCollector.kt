@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.util.Log
 import android.util.Size
 import com.maxmind.device.model.CameraInfo
 
@@ -15,7 +16,12 @@ import com.maxmind.device.model.CameraInfo
  */
 internal class CameraCollector(
     private val context: Context,
+    private val enableLogging: Boolean = false,
 ) {
+    private companion object {
+        private const val TAG = "CameraCollector"
+    }
+
     /**
      * Collects information about all cameras on the device.
      *
@@ -35,6 +41,9 @@ internal class CameraCollector(
             e: Exception,
         ) {
             // CameraManager may throw on some devices
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect camera list: ${e.message}")
+            }
             emptyList()
         }
     }
@@ -78,6 +87,9 @@ internal class CameraCollector(
             e: Exception,
         ) {
             // Individual camera info may fail, skip it
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect camera info for $cameraID: ${e.message}")
+            }
             null
         }
 }

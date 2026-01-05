@@ -92,19 +92,19 @@ internal class DeviceDataCollector(
     }
 
     private val storedIDCollector = storedIDStorage?.let { StoredIDCollector(it) }
-    private val deviceIDsCollector = DeviceIDsCollector(context)
-    private val gpuCollector = GpuCollector()
+    private val deviceIDsCollector = DeviceIDsCollector(context, enableLogging)
+    private val gpuCollector = GpuCollector(enableLogging)
     private val audioCollector = AudioCollector(context)
     private val sensorCollector = SensorCollector(context)
-    private val cameraCollector = CameraCollector(context)
-    private val codecCollector = CodecCollector()
-    private val systemFeaturesCollector = SystemFeaturesCollector(context)
-    private val networkCollector = NetworkCollector(context)
-    private val settingsCollector = SettingsCollector(context)
-    private val behaviorCollector = BehaviorCollector(context)
-    private val telephonyCollector = TelephonyCollector(context)
+    private val cameraCollector = CameraCollector(context, enableLogging)
+    private val codecCollector = CodecCollector(enableLogging)
+    private val systemFeaturesCollector = SystemFeaturesCollector(context, enableLogging)
+    private val networkCollector = NetworkCollector(context, enableLogging)
+    private val settingsCollector = SettingsCollector(context, enableLogging)
+    private val behaviorCollector = BehaviorCollector(context, enableLogging)
+    private val telephonyCollector = TelephonyCollector(context, enableLogging)
     private val fontCollector = FontCollector()
-    private val webViewCollector = WebViewCollector(context)
+    private val webViewCollector = WebViewCollector(context, enableLogging)
 
     /**
      * Safely executes a collection block, returning a fallback value on failure.

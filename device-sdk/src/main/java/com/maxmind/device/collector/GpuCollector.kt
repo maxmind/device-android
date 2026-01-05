@@ -6,6 +6,7 @@ import android.opengl.EGLContext
 import android.opengl.EGLDisplay
 import android.opengl.EGLSurface
 import android.opengl.GLES20
+import android.util.Log
 import com.maxmind.device.model.GpuInfo
 
 /**
@@ -14,7 +15,13 @@ import com.maxmind.device.model.GpuInfo
  * Creates a temporary EGL context to query GPU capabilities without
  * requiring a visible surface or window.
  */
-internal class GpuCollector {
+internal class GpuCollector(
+    private val enableLogging: Boolean = false,
+) {
+    private companion object {
+        private const val TAG = "GpuCollector"
+    }
+
     /**
      * Collects GPU information.
      *
@@ -130,6 +137,9 @@ internal class GpuCollector {
             e: Exception,
         ) {
             // OpenGL ES may not be available on some devices or emulators
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect GPU info: ${e.message}")
+            }
             null
         } finally {
             // Clean up EGL resources

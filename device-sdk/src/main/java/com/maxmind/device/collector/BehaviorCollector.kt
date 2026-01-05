@@ -2,6 +2,7 @@ package com.maxmind.device.collector
 
 import android.content.Context
 import android.provider.Settings
+import android.util.Log
 import com.maxmind.device.model.BehaviorInfo
 
 /**
@@ -12,7 +13,12 @@ import com.maxmind.device.model.BehaviorInfo
  */
 internal class BehaviorCollector(
     private val context: Context,
+    private val enableLogging: Boolean = false,
 ) {
+    private companion object {
+        private const val TAG = "BehaviorCollector"
+    }
+
     /**
      * Collects behavioral information.
      *
@@ -36,6 +42,9 @@ internal class BehaviorCollector(
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,
         ) {
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect enabled keyboards: ${e.message}")
+            }
             emptyList()
         }
 
@@ -51,6 +60,9 @@ internal class BehaviorCollector(
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,
         ) {
+            if (enableLogging) {
+                Log.d(TAG, "Failed to collect enabled accessibility services: ${e.message}")
+            }
             emptyList()
         }
 }
