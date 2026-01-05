@@ -24,9 +24,10 @@ internal class SystemFeaturesCollector(
      */
     fun collect(): List<String> =
         try {
+            // Returns features in the order provided by the system - this order
+            // is deterministic/stable on a given device per the Android HAL spec
             context.packageManager.systemAvailableFeatures
                 .mapNotNull { it.name }
-                .sorted()
         } catch (
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             e: Exception,

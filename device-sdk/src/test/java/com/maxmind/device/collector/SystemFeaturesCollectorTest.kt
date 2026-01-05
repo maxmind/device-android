@@ -25,7 +25,7 @@ internal class SystemFeaturesCollectorTest {
     }
 
     @Test
-    internal fun `collect returns sorted list of feature names`() {
+    internal fun `collect returns list of feature names in system order`() {
         val features =
             arrayOf(
                 createFeatureInfo("android.hardware.wifi"),
@@ -38,10 +38,10 @@ internal class SystemFeaturesCollectorTest {
 
         assertNotNull(result)
         assertEquals(3, result.size)
-        // Should be sorted alphabetically
-        assertEquals("android.hardware.bluetooth", result[0])
-        assertEquals("android.hardware.camera", result[1])
-        assertEquals("android.hardware.wifi", result[2])
+        // Features are returned in the order provided by the system (stable per device)
+        assertEquals("android.hardware.wifi", result[0])
+        assertEquals("android.hardware.bluetooth", result[1])
+        assertEquals("android.hardware.camera", result[2])
     }
 
     @Test
