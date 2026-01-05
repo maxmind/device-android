@@ -115,14 +115,19 @@ if (hasDebugCert) {
         into("src/main/res/raw")
         rename { "debug_ca.crt" }
     }
+}
 
-    // Generate network security config that includes the bundled cert
-    tasks.register("generateNetworkSecurityConfig") {
+// Always generate network security config - with or without debug cert
+tasks.register("generateNetworkSecurityConfig") {
+    if (hasDebugCert) {
         dependsOn("copyDebugCaCert")
-        val outputFile = file("src/main/res/xml/network_security_config.xml")
-        outputs.file(outputFile)
-        doLast {
-            outputFile.parentFile.mkdirs()
+    }
+    val outputFile = file("src/main/res/xml/network_security_config.xml")
+    outputs.file(outputFile)
+    doLast {
+        outputFile.parentFile.mkdirs()
+        if (hasDebugCert) {
+            // Config with debug certificate for local development
             outputFile.writeText(
                 """
                 |<?xml version="1.0" encoding="utf-8"?>
@@ -146,19 +151,37 @@ if (hasDebugCert) {
                 |</network-security-config>
                 """.trimMargin(),
             )
+        } else {
+            // Default config using system certificates only
+            outputFile.writeText(
+                """
+                |<?xml version="1.0" encoding="utf-8"?>
+                |<!-- Generated - do not edit. Configure via local.properties -->
+                |<network-security-config>
+                |    <base-config cleartextTrafficPermitted="false">
+                |        <trust-anchors>
+                |            <certificates src="system" />
+                |        </trust-anchors>
+                |    </base-config>
+                |</network-security-config>
+                """.trimMargin(),
+            )
         }
     }
+}
 
-    tasks.named("preBuild") {
-        dependsOn("generateNetworkSecurityConfig")
-    }
+tasks.named("preBuild") {
+    dependsOn("generateNetworkSecurityConfig")
+}
 
-    // Clean up generated files
-    tasks.named("clean") {
-        doLast {
-            delete("src/main/res/raw/debug_ca.crt")
-        }
+// Clean up generated files
+tasks.named("clean") {
+    doLast {
+        delete("src/main/res/raw/debug_ca.crt")
+        delete("src/main/res/xml/network_security_config.xml")
     }
-} else if (debugCaCertPath.isNotEmpty()) {
+}
+
+if (debugCaCertPath.isNotEmpty() && !hasDebugCert) {
     logger.warn("Debug CA certificate not found at: $debugCaCertPath")
 }
