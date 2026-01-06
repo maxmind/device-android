@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,16 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
 }
+
+// Read local.properties for debug configuration
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+val debugServerUrl = localProperties.getProperty("debug.server.url", "")
+val debugCaCertPath = localProperties.getProperty("debug.ca.cert", "")
+val accountId = localProperties.getProperty("maxmind.account.id", "0")
 
 android {
     namespace = "com.maxmind.device.sample"
@@ -27,6 +39,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "DEBUG_SERVER_URL", "\"$debugServerUrl\"")
+        buildConfigField("int", "MAXMIND_ACCOUNT_ID", accountId)
     }
 
     buildTypes {
@@ -53,6 +68,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -84,4 +100,88 @@ dependencies {
 detekt {
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
+}
+
+// Debug CA certificate support for local development
+// Usage: Add to local.properties:
+//   debug.ca.cert=/path/to/your/ca.crt
+//   debug.server.url=https://localhost:8443
+val hasDebugCert = debugCaCertPath.isNotEmpty() && file(debugCaCertPath).exists()
+
+if (hasDebugCert) {
+    // Copy certificate to res/raw
+    tasks.register<Copy>("copyDebugCaCert") {
+        from(debugCaCertPath)
+        into("src/main/res/raw")
+        rename { "debug_ca.crt" }
+    }
+}
+
+// Always generate network security config - with or without debug cert
+tasks.register("generateNetworkSecurityConfig") {
+    if (hasDebugCert) {
+        dependsOn("copyDebugCaCert")
+    }
+    val outputFile = file("src/main/res/xml/network_security_config.xml")
+    outputs.file(outputFile)
+    doLast {
+        outputFile.parentFile.mkdirs()
+        if (hasDebugCert) {
+            // Config with debug certificate for local development
+            outputFile.writeText(
+                """
+                |<?xml version="1.0" encoding="utf-8"?>
+                |<!-- Generated - do not edit. Configure via local.properties -->
+                |<network-security-config>
+                |    <debug-overrides>
+                |        <trust-anchors>
+                |            <certificates src="@raw/debug_ca" />
+                |            <certificates src="user" />
+                |            <certificates src="system" />
+                |        </trust-anchors>
+                |    </debug-overrides>
+                |    <domain-config>
+                |        <domain includeSubdomains="false">localhost</domain>
+                |        <trust-anchors>
+                |            <certificates src="@raw/debug_ca" />
+                |            <certificates src="user" />
+                |            <certificates src="system" />
+                |        </trust-anchors>
+                |    </domain-config>
+                |</network-security-config>
+                """.trimMargin(),
+            )
+        } else {
+            // Default config using system certificates only
+            outputFile.writeText(
+                """
+                |<?xml version="1.0" encoding="utf-8"?>
+                |<!-- Generated - do not edit. Configure via local.properties -->
+                |<network-security-config>
+                |    <base-config cleartextTrafficPermitted="false">
+                |        <trust-anchors>
+                |            <certificates src="system" />
+                |        </trust-anchors>
+                |    </base-config>
+                |</network-security-config>
+                """.trimMargin(),
+            )
+        }
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn("generateNetworkSecurityConfig")
+}
+
+// Clean up generated files
+tasks.named("clean") {
+    doLast {
+        delete("src/main/res/raw/debug_ca.crt")
+        delete("src/main/res/xml/network_security_config.xml")
+    }
+}
+
+if (debugCaCertPath.isNotEmpty() && !hasDebugCert) {
+    logger.warn("Debug CA certificate not found at: $debugCaCertPath")
 }

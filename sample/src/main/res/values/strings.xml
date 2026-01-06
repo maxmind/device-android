@@ -1,3 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Device SDK Sample</string>
+    <string name="app_name">MaxMind Device SDK Sample</string>
+    <string name="initialize_sdk">Initialize SDK</string>
+    <string name="collect_data">Collect Device Data</string>
+    <string name="send_data">Send Data</string>
+    <string name="sdk_status">SDK Status</string>
+    <string name="status_not_initialized">SDK not initialized</string>
+    <string name="status_initialized">SDK initialized</string>
+    <string name="status_collecting">Collecting device data...</string>
+    <string name="status_sending">Sending data...</string>
+    <string name="status_success">Data sent successfully!</string>
+    <string name="status_error">Error: %s</string>
+    <string name="device_info_title">Device Information</string>
+    <string name="clear_log">Clear Log</string>
 </resources>

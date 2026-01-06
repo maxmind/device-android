@@ -102,3 +102,7 @@ inputs.csv
 summary.md
 plan.md
 build-log.txt
+
+# Generated files for local development (configured via local.properties)
+sample/src/main/res/raw/debug_ca.crt
+sample/src/main/res/xml/network_security_config.xml
