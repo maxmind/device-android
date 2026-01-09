@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -8,6 +10,7 @@ plugins {
     alias(libs.plugins.maven.publish)
     signing
     id("tech.apter.junit5.jupiter.robolectric-extension-gradle-plugin") version "0.9.0"
+    id("me.champeau.gradle.japicmp") version "0.4.5"
 }
 
 android {
@@ -167,4 +170,59 @@ mavenPublishing {
 // This respects ~/.gnupg configuration and gpg-agent
 signing {
     useGpgCmd()
+}
+
+// API compatibility checking with japicmp
+// Compares the current build against the latest released version on Maven Central
+// Update this version after each release (the release script should do this automatically)
+val baselineVersion = "0.1.0"
+
+// Download baseline AAR directly from Maven Central to avoid local project resolution
+val downloadBaselineAar by tasks.registering {
+    val outputFile = layout.buildDirectory.file("japicmp/baseline.aar")
+    outputs.file(outputFile)
+    doLast {
+        val url = "https://repo1.maven.org/maven2/com/maxmind/device/device-sdk/$baselineVersion/device-sdk-$baselineVersion.aar"
+        val destFile = outputFile.get().asFile
+        destFile.parentFile.mkdirs()
+        URI(url).toURL().openStream().use { input ->
+            destFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        logger.lifecycle("Downloaded baseline AAR from $url")
+    }
+}
+
+// Extract classes.jar from baseline AAR for comparison
+val extractBaselineClasses by tasks.registering(Copy::class) {
+    dependsOn(downloadBaselineAar)
+    from(zipTree(layout.buildDirectory.file("japicmp/baseline.aar"))) {
+        include("classes.jar")
+    }
+    into(layout.buildDirectory.dir("japicmp/baseline"))
+}
+
+// Extract classes.jar from current AAR for comparison
+val extractCurrentClasses by tasks.registering(Copy::class) {
+    dependsOn("bundleReleaseAar")
+    from(zipTree(layout.buildDirectory.file("outputs/aar/device-sdk-release.aar"))) {
+        include("classes.jar")
+    }
+    into(layout.buildDirectory.dir("japicmp/current"))
+}
+
+tasks.register<me.champeau.gradle.japicmp.JapicmpTask>("japicmp") {
+    dependsOn(extractBaselineClasses, extractCurrentClasses)
+    oldClasspath.from(layout.buildDirectory.file("japicmp/baseline/classes.jar"))
+    newClasspath.from(layout.buildDirectory.file("japicmp/current/classes.jar"))
+    oldArchives.from(layout.buildDirectory.file("japicmp/baseline/classes.jar"))
+    newArchives.from(layout.buildDirectory.file("japicmp/current/classes.jar"))
+    accessModifier.set("public")
+    onlyModified.set(true)
+    failOnModification.set(true)
+    includeSynthetic.set(false)
+    ignoreMissingClasses.set(true)
+    txtOutputFile.set(layout.buildDirectory.file("japicmp/report.txt"))
+    htmlOutputFile.set(layout.buildDirectory.file("japicmp/report.html"))
 }
