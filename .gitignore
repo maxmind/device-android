@@ -106,3 +106,8 @@ build-log.txt
 # Generated files for local development (configured via local.properties)
 sample/src/main/res/raw/debug_ca.crt
 sample/src/main/res/xml/network_security_config.xml
+
+# Release artifacts (temporary files created by release script)
+device-sdk-*.aar
+device-sdk-*.jar
+*.asc

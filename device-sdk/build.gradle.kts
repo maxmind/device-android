@@ -5,8 +5,8 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
-    id("maven-publish")
-    id("signing")
+    alias(libs.plugins.maven.publish)
+    signing
     id("tech.apter.junit5.jupiter.robolectric-extension-gradle-plugin") version "0.9.0"
 }
 
@@ -66,13 +66,6 @@ android {
             isIncludeAndroidResources = true
         }
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-            withJavadocJar()
-        }
-    }
 }
 
 dependencies {
@@ -118,76 +111,57 @@ tasks.dokkaHtml.configure {
     outputDirectory.set(layout.buildDirectory.dir("dokka"))
 }
 
-// Maven publishing configuration
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = project.group.toString()
-            artifactId = "device-sdk"
-            version = project.version.toString()
+// Maven Central publishing configuration (using Vanniktech plugin)
+// Only configure Maven Central upload when real credentials are available.
+// Credentials come from env vars (set by release.sh from ~/.m2/settings.xml)
+// or can be provided directly via ORG_GRADLE_PROJECT_mavenCentralUsername
+val mavenCentralUsername = providers.gradleProperty("mavenCentralUsername").orNull ?: ""
+val hasMavenCentralCredentials = mavenCentralUsername.isNotEmpty()
 
-            afterEvaluate {
-                from(components["release"])
-            }
+mavenPublishing {
+    if (hasMavenCentralCredentials) {
+        publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    }
+    signAllPublications()
 
-            pom {
-                name.set(findProperty("POM_NAME")?.toString() ?: "MaxMind Device SDK")
-                description.set(
-                    findProperty("POM_DESCRIPTION")?.toString()
-                        ?: "Android SDK for collecting and reporting device data to MaxMind",
-                )
-                url.set(findProperty("POM_URL")?.toString() ?: "")
-                inceptionYear.set(findProperty("POM_INCEPTION_YEAR")?.toString() ?: "2025")
+    coordinates(
+        groupId = "com.maxmind.device",
+        artifactId = "device-sdk",
+        version = project.version.toString(),
+    )
 
-                licenses {
-                    license {
-                        name.set(findProperty("POM_LICENSE_NAME")?.toString() ?: "")
-                        url.set(findProperty("POM_LICENSE_URL")?.toString() ?: "")
-                        distribution.set(findProperty("POM_LICENSE_DIST")?.toString() ?: "")
-                    }
-                }
+    pom {
+        name.set("MaxMind Device SDK")
+        description.set("Android SDK for collecting and reporting device data to MaxMind")
+        inceptionYear.set("2025")
+        url.set("https://github.com/maxmind/device-android")
 
-                developers {
-                    developer {
-                        id.set(findProperty("POM_DEVELOPER_ID")?.toString() ?: "")
-                        name.set(findProperty("POM_DEVELOPER_NAME")?.toString() ?: "")
-                        url.set(findProperty("POM_DEVELOPER_URL")?.toString() ?: "")
-                    }
-                }
-
-                scm {
-                    url.set(findProperty("POM_SCM_URL")?.toString() ?: "")
-                    connection.set(findProperty("POM_SCM_CONNECTION")?.toString() ?: "")
-                    developerConnection.set(
-                        findProperty("POM_SCM_DEV_CONNECTION")?.toString() ?: "",
-                    )
-                }
+        licenses {
+            license {
+                name.set("Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("repo")
             }
         }
-    }
 
-    repositories {
-        maven {
-            name = "mavenCentral"
-            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = findProperty("mavenCentralUsername")?.toString() ?: ""
-                password = findProperty("mavenCentralPassword")?.toString() ?: ""
+        developers {
+            developer {
+                id.set("maxmind")
+                name.set("MaxMind, Inc.")
+                url.set("https://www.maxmind.com/")
             }
+        }
+
+        scm {
+            url.set("https://github.com/maxmind/device-android")
+            connection.set("scm:git:git://github.com/maxmind/device-android.git")
+            developerConnection.set("scm:git:ssh://git@github.com/maxmind/device-android.git")
         }
     }
 }
 
-// Signing configuration
+// Configure signing to use GPG command (like Maven) instead of in-memory keys
+// This respects ~/.gnupg configuration and gpg-agent
 signing {
-    if (findProperty("signing.keyId") != null) {
-        sign(publishing.publications["release"])
-    }
-}
-
-// Task to generate Javadoc from Dokka
-tasks.register<Jar>("javadocJar") {
-    dependsOn(tasks.dokkaHtml)
-    archiveClassifier.set("javadoc")
-    from(tasks.dokkaHtml.get().outputDirectory)
+    useGpgCmd()
 }
