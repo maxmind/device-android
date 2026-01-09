@@ -46,17 +46,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-
-        // Enable explicit API mode for better library API design
-        freeCompilerArgs +=
-            listOf(
-                "-Xexplicit-api=strict",
-                "-opt-in=kotlin.RequiresOptIn",
-            )
-    }
-
     buildFeatures {
         buildConfig = true
     }
@@ -65,6 +54,18 @@ android {
         unitTests {
             isIncludeAndroidResources = true
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+
+        // Enable explicit API mode for better library API design
+        freeCompilerArgs.addAll(
+            "-Xexplicit-api=strict",
+            "-opt-in=kotlin.RequiresOptIn",
+        )
     }
 }
 
@@ -106,9 +107,11 @@ detekt {
     buildUponDefaultConfig = true
 }
 
-// Dokka configuration
-tasks.dokkaHtml.configure {
-    outputDirectory.set(layout.buildDirectory.dir("dokka"))
+// Dokka configuration (V2 API)
+dokka {
+    dokkaPublications.html {
+        outputDirectory.set(layout.buildDirectory.dir("dokka"))
+    }
 }
 
 // Maven Central publishing configuration (using Vanniktech plugin)
