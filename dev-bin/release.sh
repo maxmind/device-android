@@ -32,7 +32,15 @@ fi
 
 check_command perl
 check_command ./gradlew
-check_command xmllint
+check_command mise
+
+# Ensure mise is activated and all tools from mise.toml are installed
+if ! mise current &>/dev/null; then
+    echo "Error: mise is not activated in your shell."
+    echo "Run 'eval \"\$(mise activate bash)\"' or add it to your shell config."
+    exit 1
+fi
+mise install --quiet
 
 # Check that we're not on the main branch
 current_branch=$(git branch --show-current)
