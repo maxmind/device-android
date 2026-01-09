@@ -87,9 +87,11 @@ If a commit fails due to formatting, run `precious tidy -g` and retry.
 
 ### Publishing
 
+See `README.dev.md` for the full release process. For manual publishing:
+
 ```bash
-# Publish to Maven Central (requires credentials in local.properties)
-./gradlew :device-sdk:publishReleasePublicationToMavenCentralRepository
+# Publish to Maven Central via Central Portal (requires credentials in local.properties)
+./gradlew :device-sdk:publishAndReleaseToMavenCentral
 ```
 
 ## Architecture
@@ -298,21 +300,16 @@ Access in build files: `libs.ktor.client.core`, `libs.plugins.kotlin.android`
 
 ## Maven Publishing Configuration
 
-Located in `device-sdk/build.gradle.kts`:
+Publishing uses the
+[Vanniktech Maven Publish](https://github.com/vanniktech/gradle-maven-publish-plugin)
+plugin configured in `device-sdk/build.gradle.kts`. The plugin publishes to
+Maven Central via Central Portal with automatic release.
 
-- POM metadata from `gradle.properties` (POM_NAME, POM_URL, etc.)
-- Signing configuration placeholders in `gradle.properties`
-- Actual credentials should be in `local.properties` (gitignored)
+Credentials are read from `~/.m2/settings.xml` (server id `central`) to share
+credentials with other MaxMind Maven projects. GPG signing uses the system `gpg`
+command, so existing `~/.gnupg` configuration is used automatically.
 
-**Required for publishing:**
-
-```properties
-signing.keyId=...
-signing.password=...
-signing.secretKeyRingFile=...
-mavenCentralUsername=...
-mavenCentralPassword=...
-```
+See `README.dev.md` for the full release process and credential setup.
 
 ## Module Structure
 

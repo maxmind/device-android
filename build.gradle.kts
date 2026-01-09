@@ -6,11 +6,13 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.dokka) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.maven.publish) apply false
+    alias(libs.plugins.dependency.updates)
 }
 
 allprojects {
     group = "com.maxmind.device"
-    version = "0.1.0-SNAPSHOT"
+    version = "0.1.0"
 }
 
 tasks.register("clean", Delete::class) {

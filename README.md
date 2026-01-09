@@ -16,7 +16,7 @@ Add the dependency to your app's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.maxmind.device:device-sdk:0.1.0-SNAPSHOT")
+    implementation("com.maxmind.device:device-sdk:0.1.0")
 }
 ```
 
@@ -24,7 +24,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.maxmind.device:device-sdk:0.1.0-SNAPSHOT'
+    implementation 'com.maxmind.device:device-sdk:0.1.0'
 }
 ```
 

@@ -39,6 +39,10 @@ turbine = "1.2.1"
 # Material (for sample app)
 material = "1.12.0"
 
+# Publishing
+mavenPublish = "0.30.0"
+dependencyUpdates = "0.53.0"
+
 [libraries]
 # Kotlin
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
@@ -87,6 +91,8 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
+dependency-updates = { id = "com.github.ben-manes.versions", version.ref = "dependencyUpdates" }
 
 [bundles]
 ktor = ["ktor-client-core", "ktor-client-android", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json", "ktor-client-logging"]
