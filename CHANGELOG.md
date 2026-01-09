@@ -1,5 +1,5 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-01-09)
 
 - Initial release
