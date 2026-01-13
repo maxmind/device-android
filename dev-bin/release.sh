@@ -126,6 +126,10 @@ perl -pi -e "s/version = \"[^\"]+\"/version = \"$version\"/" build.gradle.kts
 # Update version in README.md
 perl -pi -e "s/com\.maxmind\.device:device-sdk:[0-9]+\.[0-9]+\.[0-9]+[a-zA-Z0-9\-]*/com.maxmind.device:device-sdk:$version/g" README.md
 
+# Update baselineVersion in device-sdk/build.gradle.kts for API compatibility checking
+# This ensures the next PR compares against this newly released version
+perl -pi -e "s/val baselineVersion = \"[^\"]+\"/val baselineVersion = \"$version\"/" device-sdk/build.gradle.kts
+
 git diff
 
 read -r -n 1 -p "Commit changes? (y/n) " should_commit
@@ -135,7 +139,7 @@ if [ "$should_commit" != "y" ]; then
     exit 1
 fi
 
-git add build.gradle.kts README.md
+git add build.gradle.kts README.md device-sdk/build.gradle.kts
 git commit -m "Preparing for $version"
 
 # Build and publish to Maven Central
