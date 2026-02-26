@@ -53,16 +53,6 @@
             app:iconGravity="start" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCollect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/collect_data"
-            android:layout_marginBottom="8dp"
-            app:icon="@android:drawable/ic_menu_info_details"
-            app:iconGravity="start"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-
-        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSend"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

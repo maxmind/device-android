@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Device build information from android.os.Build.
  */
 @Serializable
-public data class BuildInfo(
+internal data class BuildInfo(
     val fingerprint: String,
     val manufacturer: String,
     val model: String,

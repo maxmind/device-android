@@ -69,7 +69,7 @@ public class DeviceTracker private constructor(
      *
      * @return [DeviceData] containing collected device information
      */
-    public fun collectDeviceData(): DeviceData = deviceDataCollector.collect()
+    internal fun collectDeviceData(): DeviceData = deviceDataCollector.collect()
 
     /**
      * Sends device data to MaxMind servers.
@@ -81,11 +81,11 @@ public class DeviceTracker private constructor(
      * @param deviceData The device data to send
      * @return [Result] containing the [TrackingResult] with tracking token, or failure
      */
-    public suspend fun sendDeviceData(deviceData: DeviceData): Result<TrackingResult> =
+    internal suspend fun sendDeviceData(deviceData: DeviceData): Result<TrackingResult> =
         apiClient.sendDeviceData(deviceData).mapCatching { response ->
             val token =
                 response.storedID
-                    ?: throw IllegalStateException("Server response missing tracking token")
+                    ?: error("Server response missing tracking token")
             try {
                 storedIDStorage.save(token)
                 if (config.enableLogging) {

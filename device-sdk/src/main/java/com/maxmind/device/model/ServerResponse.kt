@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * @property ipVersion The IP version used for the request (4 or 6)
  */
 @Serializable
-public data class ServerResponse(
+internal data class ServerResponse(
     @SerialName("stored_id")
     val storedID: String? = null,
     @SerialName("ip_version")

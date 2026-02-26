@@ -14,6 +14,6 @@ import kotlinx.serialization.Serializable
  * @property id The stored ID string in format "{uuid}:{hmac}", or null if not yet received from server
  */
 @Serializable
-public data class StoredID(
+internal data class StoredID(
     val id: String? = null,
 )

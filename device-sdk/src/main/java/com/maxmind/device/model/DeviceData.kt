@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * and sent to MaxMind servers for device fingerprinting and fraud detection.
  */
 @Serializable
-public data class DeviceData(
+internal data class DeviceData(
     // Server-generated stored ID (like browser cookies)
     @SerialName("stored_id")
     val storedID: StoredID = StoredID(),

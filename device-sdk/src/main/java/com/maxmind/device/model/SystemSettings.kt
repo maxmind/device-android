@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * System configuration settings.
  */
 @Serializable
-public data class SystemSettings(
+internal data class SystemSettings(
     @SerialName("screen_timeout")
     val screenTimeout: Int? = null,
     @SerialName("development_settings_enabled")

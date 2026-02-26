@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Telephony context information from TelephonyManager.
  */
 @Serializable
-public data class TelephonyInfo(
+internal data class TelephonyInfo(
     @SerialName("network_operator_name")
     val networkOperatorName: String? = null,
     @SerialName("sim_state")
