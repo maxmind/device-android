@@ -58,8 +58,8 @@ class MyApplication : Application() {
 ```kotlin
 lifecycleScope.launch {
     DeviceTracker.getInstance().collectAndSend()
-        .onSuccess {
-            Log.d("SDK", "Data sent successfully")
+        .onSuccess { trackingResult ->
+            Log.d("SDK", "Tracking token: ${trackingResult.trackingToken}")
         }
         .onFailure { error ->
             Log.e("SDK", "Failed to send data", error)
@@ -71,8 +71,8 @@ lifecycleScope.launch {
 
 ```kotlin
 DeviceTracker.getInstance().collectAndSend { result ->
-    result.onSuccess {
-        Log.d("SDK", "Data sent successfully")
+    result.onSuccess { trackingResult ->
+        Log.d("SDK", "Tracking token: ${trackingResult.trackingToken}")
     }.onFailure { error ->
         Log.e("SDK", "Failed to send data", error)
     }
@@ -84,7 +84,8 @@ DeviceTracker.getInstance().collectAndSend { result ->
 ```java
 DeviceTracker.getInstance().collectAndSend(result -> {
     if (result.isSuccess()) {
-        Log.d("SDK", "Data sent successfully");
+        TrackingResult trackingResult = result.getOrThrow();
+        Log.d("SDK", "Tracking token: " + trackingResult.getTrackingToken());
     } else {
         Throwable error = result.exceptionOrNull();
         Log.e("SDK", "Failed to send data", error);
@@ -99,6 +100,23 @@ Collect device data without sending:
 ```kotlin
 val deviceData = DeviceTracker.getInstance().collectDeviceData()
 println("Device: ${deviceData.build.manufacturer} ${deviceData.build.model}")
+```
+
+### 4. Linking Device Data to minFraud Transactions
+
+After collecting and sending device data, pass the tracking token to the
+minFraud API to link device data with transactions:
+
+```kotlin
+lifecycleScope.launch {
+    DeviceTracker.getInstance().collectAndSend()
+        .onSuccess { trackingResult ->
+            // Pass trackingResult.trackingToken to your backend,
+            // then include it in the minFraud request's
+            // /device/tracking_token field
+            sendToBackend(trackingResult.trackingToken)
+        }
+}
 ```
 
 ## Configuration Options

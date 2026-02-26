@@ -75,7 +75,7 @@ internal class DeviceApiClient(
      * If a custom server URL is set, sends only to that URL.
      *
      * @param deviceData The device data to send
-     * @return [Result] containing the server response with stored ID, or an error
+     * @return [Result] containing the server response with tracking token, or an error
      */
     suspend fun sendDeviceData(deviceData: DeviceData): Result<ServerResponse> =
         if (config.useDefaultServers) {

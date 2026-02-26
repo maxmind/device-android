@@ -209,8 +209,8 @@ class MainActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 sdk.collectAndSend().fold(
-                    onSuccess = {
-                        appendLog("✓ Data sent successfully!")
+                    onSuccess = { response ->
+                        appendLog("✓ Data sent! Tracking token: ${response.trackingToken}")
                         showMessage("Data sent successfully")
                     },
                     onFailure = { error ->

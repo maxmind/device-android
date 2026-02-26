@@ -5,6 +5,7 @@ import android.util.Log
 import com.maxmind.device.collector.DeviceDataCollector
 import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.DeviceData
+import com.maxmind.device.model.TrackingResult
 import com.maxmind.device.network.DeviceApiClient
 import com.maxmind.device.storage.StoredIDStorage
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +15,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Main entry point for the MaxMind Device Tracking SDK.
@@ -32,8 +34,8 @@ import kotlinx.coroutines.launch
  *
  * // Collect and send device data
  * DeviceTracker.getInstance().collectAndSend { result ->
- *     result.onSuccess {
- *         Log.d("SDK", "Data sent successfully")
+ *     result.onSuccess { trackingResult ->
+ *         Log.d("SDK", "Tracking token: ${trackingResult.trackingToken}")
  *     }.onFailure { error ->
  *         Log.e("SDK", "Failed to send data", error)
  *     }
@@ -73,20 +75,32 @@ public class DeviceTracker private constructor(
      * Sends device data to MaxMind servers.
      *
      * This is a suspending function that should be called from a coroutine.
-     * On success, saves the server-generated stored ID for future requests.
+     * On success, attempts to persist the tracking token locally for future requests.
+     * Storage failures do not cause the operation to fail.
      *
      * @param deviceData The device data to send
-     * @return [Result] indicating success or failure
+     * @return [Result] containing the [TrackingResult] with tracking token, or failure
      */
-    public suspend fun sendDeviceData(deviceData: DeviceData): Result<Unit> =
-        apiClient.sendDeviceData(deviceData).map { response ->
-            // Save the stored ID from the server response
-            response.storedID?.let { id ->
-                storedIDStorage.save(id)
+    public suspend fun sendDeviceData(deviceData: DeviceData): Result<TrackingResult> =
+        apiClient.sendDeviceData(deviceData).mapCatching { response ->
+            val token =
+                response.storedID
+                    ?: throw IllegalStateException("Server response missing tracking token")
+            try {
+                storedIDStorage.save(token)
                 if (config.enableLogging) {
                     Log.d(TAG, "Stored ID saved from server response")
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: Exception,
+            ) {
+                if (config.enableLogging) {
+                    Log.e(TAG, "Failed to save stored ID to local storage", e)
+                }
             }
+            TrackingResult(trackingToken = token)
         }
 
     /**
@@ -94,9 +108,9 @@ public class DeviceTracker private constructor(
      *
      * This is a suspending function that should be called from a coroutine.
      *
-     * @return [Result] indicating success or failure
+     * @return [Result] containing the [TrackingResult] with tracking token, or failure
      */
-    public suspend fun collectAndSend(): Result<Unit> {
+    public suspend fun collectAndSend(): Result<TrackingResult> {
         val deviceData = collectDeviceData()
         return sendDeviceData(deviceData)
     }
@@ -106,10 +120,10 @@ public class DeviceTracker private constructor(
      *
      * This is a convenience method for Java compatibility and simpler usage.
      *
-     * @param callback Callback invoked when the operation completes
+     * @param callback Callback invoked with a [Result] containing [TrackingResult] on success
      */
     @JvmOverloads
-    public fun collectAndSend(callback: ((Result<Unit>) -> Unit)? = null) {
+    public fun collectAndSend(callback: ((Result<TrackingResult>) -> Unit)? = null) {
         coroutineScope.launch {
             val result = collectAndSend()
             callback?.invoke(result)
@@ -119,18 +133,18 @@ public class DeviceTracker private constructor(
     private fun startAutomaticCollection() {
         coroutineScope.launch {
             while (isActive) {
-                try {
-                    collectAndSend()
-                    if (config.enableLogging) {
-                        Log.d(TAG, "Automatic device data collection completed")
-                    }
-                } catch (
-                    @Suppress("TooGenericExceptionCaught") e: Exception,
-                ) {
-                    if (config.enableLogging) {
-                        Log.e(TAG, "Automatic collection failed", e)
-                    }
-                }
+                collectAndSend().fold(
+                    onSuccess = {
+                        if (config.enableLogging) {
+                            Log.d(TAG, "Automatic device data collection completed")
+                        }
+                    },
+                    onFailure = { e ->
+                        if (config.enableLogging) {
+                            Log.e(TAG, "Automatic collection failed", e)
+                        }
+                    },
+                )
                 delay(config.collectionIntervalMs)
             }
         }
