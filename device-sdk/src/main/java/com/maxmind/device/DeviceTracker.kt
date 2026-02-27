@@ -35,7 +35,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * // Collect and send device data
  * DeviceTracker.getInstance().collectAndSend { result ->
  *     result.onSuccess { trackingResult ->
- *         Log.d("SDK", "Tracking token: ${trackingResult.trackingToken}")
+ *         sendToBackend(trackingResult.trackingToken)
  *     }.onFailure { error ->
  *         Log.e("SDK", "Failed to send data", error)
  *     }
