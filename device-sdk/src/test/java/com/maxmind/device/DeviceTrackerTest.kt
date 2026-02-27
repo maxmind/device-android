@@ -193,6 +193,7 @@ internal class DeviceTrackerTest {
         runTest {
             val tracker = createTrackerWithMocks()
             val mockApiClient = getField<DeviceApiClient>(tracker, "apiClient")
+            val mockStorage = getField<StoredIDStorage>(tracker, "storedIDStorage")
 
             val response = ServerResponse(storedID = null)
             coEvery { mockApiClient.sendDeviceData(any()) } returns Result.success(response)
@@ -202,6 +203,7 @@ internal class DeviceTrackerTest {
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is IllegalStateException)
             assertEquals("Server response missing tracking token", result.exceptionOrNull()?.message)
+            verify(exactly = 0) { mockStorage.save(any()) }
         }
 
     @Test
@@ -244,6 +246,7 @@ internal class DeviceTrackerTest {
         runTest {
             val tracker = createTrackerWithMocks()
             val mockApiClient = getField<DeviceApiClient>(tracker, "apiClient")
+            val mockStorage = getField<StoredIDStorage>(tracker, "storedIDStorage")
 
             val response = ServerResponse(storedID = "", ipVersion = 6)
             coEvery { mockApiClient.sendDeviceData(any()) } returns Result.success(response)
@@ -252,6 +255,7 @@ internal class DeviceTrackerTest {
 
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+            verify(exactly = 0) { mockStorage.save(any()) }
         }
 
     /**

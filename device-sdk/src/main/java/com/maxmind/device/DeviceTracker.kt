@@ -86,6 +86,7 @@ public class DeviceTracker private constructor(
             val token =
                 response.storedID
                     ?: error("Server response missing tracking token")
+            val result = TrackingResult(trackingToken = token)
             try {
                 storedIDStorage.save(token)
                 if (config.enableLogging) {
@@ -100,7 +101,7 @@ public class DeviceTracker private constructor(
                     Log.e(TAG, "Failed to save stored ID to local storage", e)
                 }
             }
-            TrackingResult(trackingToken = token)
+            result
         }
 
     /**
