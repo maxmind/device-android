@@ -1,5 +1,6 @@
 package com.maxmind.device.network
 
+import android.util.Log
 import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.DeviceData
 import com.maxmind.device.model.ServerResponse
@@ -110,7 +111,13 @@ internal class DeviceApiClient(
                 )
             // Send to IPv4 but don't fail the overall operation if it fails
             // The stored_id from IPv6 is already valid
-            sendToUrl(dataWithDuration, ipv4Url)
+            val ipv4Result = sendToUrl(dataWithDuration, ipv4Url)
+            if (config.enableLogging) {
+                ipv4Result.fold(
+                    onSuccess = { Log.d(TAG, "IPv4 device data sent successfully") },
+                    onFailure = { e -> Log.d(TAG, "IPv4 device data send failed (non-fatal)", e) },
+                )
+            }
         }
 
         // Return the IPv6 response (which has the stored_id)
