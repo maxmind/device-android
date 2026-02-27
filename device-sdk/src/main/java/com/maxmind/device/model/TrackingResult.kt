@@ -13,4 +13,6 @@ public data class TrackingResult(
     init {
         require(trackingToken.isNotBlank()) { "Tracking token must not be blank" }
     }
+
+    override fun toString(): String = "TrackingResult(trackingToken=<redacted>)"
 }
