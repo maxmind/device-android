@@ -146,10 +146,26 @@ The SDK uses a **singleton pattern with initialization guard**:
    2. If response contains `ip_version: 6`, a second request is sent to
       `d-ipv4.mmapiws.com/device/android`
    3. The IPv4 request is fire-and-forget (failures don't affect the result)
-   4. The tracking token from the IPv6 response is returned and persisted
+   4. The stored ID from the IPv6 response is returned and persisted
 
    If a custom server URL is configured via `SdkConfig.Builder.serverUrl()`, the
    dual-request flow is disabled and only a single request is sent.
+
+### Terminology: Stored ID vs Tracking Token
+
+These are two names for related but distinct concepts:
+
+- **Stored ID** (`stored_id`): The server-generated identifier returned in the
+  API response and persisted locally via `StoredIDStorage`. Used internally
+  throughout the SDK (model classes, storage, network layer, comments, logs).
+- **Tracking token** (`trackingToken`): The value exposed to SDK consumers via
+  `TrackingResult.trackingToken`, intended for passing to the minFraud API's
+  `/device/tracking_token` field.
+
+Today they happen to be the same value, but the abstraction exists so the
+public-facing token format can change independently of the internal stored ID.
+Use "stored ID" in internal code and "tracking token" only in public API
+surfaces.
 
 ### Data Model
 
