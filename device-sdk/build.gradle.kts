@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.maven.publish)
     signing
     id("tech.apter.junit5.jupiter.robolectric-extension-gradle-plugin") version "0.9.0"
-    id("me.champeau.gradle.japicmp") version "0.4.5"
+    id("me.champeau.gradle.japicmp") version "0.4.6"
 }
 
 android {
@@ -126,7 +126,7 @@ val hasMavenCentralCredentials = mavenCentralUsername.isNotEmpty()
 
 mavenPublishing {
     if (hasMavenCentralCredentials) {
-        publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+        publishToMavenCentral(automaticRelease = true)
     }
     signAllPublications()
 
