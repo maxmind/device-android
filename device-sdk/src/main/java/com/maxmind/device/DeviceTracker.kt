@@ -111,10 +111,17 @@ public class DeviceTracker private constructor(
      *
      * @return [Result] containing the [TrackingResult] with tracking token, or failure
      */
-    public suspend fun collectAndSend(): Result<TrackingResult> {
-        val deviceData = collectDeviceData()
-        return sendDeviceData(deviceData)
-    }
+    public suspend fun collectAndSend(): Result<TrackingResult> =
+        try {
+            val deviceData = collectDeviceData()
+            sendDeviceData(deviceData)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (
+            @Suppress("TooGenericExceptionCaught") e: Exception,
+        ) {
+            Result.failure(e)
+        }
 
     /**
      * Collects device data and sends it asynchronously with a callback.

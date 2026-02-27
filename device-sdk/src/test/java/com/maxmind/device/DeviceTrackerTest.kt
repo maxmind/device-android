@@ -1,6 +1,7 @@
 package com.maxmind.device
 
 import android.content.Context
+import com.maxmind.device.collector.DeviceDataCollector
 import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.ServerResponse
 import com.maxmind.device.model.TrackingResult
@@ -256,6 +257,23 @@ internal class DeviceTrackerTest {
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is IllegalArgumentException)
             verify(exactly = 0) { mockStorage.save(any()) }
+        }
+
+    @Test
+    @Order(15)
+    internal fun `15 collectAndSend wraps collectDeviceData exception in Result failure`() =
+        runTest {
+            val tracker = createTrackerWithMocks()
+            val mockCollector = mockk<DeviceDataCollector>()
+            setField(tracker, "deviceDataCollector", mockCollector)
+
+            every { mockCollector.collect() } throws RuntimeException("sensor failure")
+
+            val result = tracker.collectAndSend()
+
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is RuntimeException)
+            assertEquals("sensor failure", result.exceptionOrNull()?.message)
         }
 
     /**
