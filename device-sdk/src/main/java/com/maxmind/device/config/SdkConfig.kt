@@ -95,14 +95,14 @@ public data class SdkConfig internal constructor(
         }
     }
 
-    public companion object {
+    internal companion object {
         /** Default IPv6 server host */
-        public const val DEFAULT_IPV6_HOST: String = "d-ipv6.mmapiws.com"
+        internal const val DEFAULT_IPV6_HOST: String = "d-ipv6.mmapiws.com"
 
         /** Default IPv4 server host */
-        public const val DEFAULT_IPV4_HOST: String = "d-ipv4.mmapiws.com"
+        internal const val DEFAULT_IPV4_HOST: String = "d-ipv4.mmapiws.com"
 
         /** API endpoint path */
-        public const val ENDPOINT_PATH: String = "/device/android"
+        internal const val ENDPOINT_PATH: String = "/device/android"
     }
 }

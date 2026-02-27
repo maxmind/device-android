@@ -434,7 +434,6 @@ internal class DeviceApiClientTest {
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            prettyPrint = true
                             isLenient = true
                             ignoreUnknownKeys = true
                         },
@@ -458,7 +457,6 @@ internal class DeviceApiClientTest {
                 install(ContentNegotiation) {
                     json(
                         Json {
-                            prettyPrint = true
                             isLenient = true
                             ignoreUnknownKeys = true
                         },

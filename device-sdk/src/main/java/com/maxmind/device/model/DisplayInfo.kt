@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Display characteristics from DisplayMetrics.
  */
 @Serializable
-public data class DisplayInfo(
+internal data class DisplayInfo(
     @SerialName("width_pixels")
     val widthPixels: Int,
     @SerialName("height_pixels")

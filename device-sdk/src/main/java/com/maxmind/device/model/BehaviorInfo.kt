@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Behavioral signals from user configuration.
  */
 @Serializable
-public data class BehaviorInfo(
+internal data class BehaviorInfo(
     @SerialName("enabled_keyboards")
     val enabledKeyboards: List<String> = emptyList(),
     @SerialName("enabled_accessibility_services")

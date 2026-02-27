@@ -119,6 +119,7 @@ The SDK uses a **singleton pattern with initialization guard**:
 1. **Public API Layer** (`DeviceTracker.kt`)
    - Singleton facade pattern
    - Both suspend functions and callback-based methods
+   - Returns `Result<TrackingResult>` containing tracking token
    - Example: `collectAndSend()` (suspend) and `collectAndSend(callback)`
      (callbacks)
 
@@ -137,7 +138,7 @@ The SDK uses a **singleton pattern with initialization guard**:
    - Ktor HTTP client with Android engine
    - kotlinx.serialization for JSON
    - Optional logging based on `enableLogging` config
-   - Returns `Result<ServerResponse>` for error handling
+   - Returns `Result<ServerResponse>` internally for error handling
 
    **Dual-Request Flow (IPv6/IPv4):** To capture both IP addresses for a device,
    the SDK uses a dual-request flow:
@@ -145,19 +146,33 @@ The SDK uses a **singleton pattern with initialization guard**:
    2. If response contains `ip_version: 6`, a second request is sent to
       `d-ipv4.mmapiws.com/device/android`
    3. The IPv4 request is fire-and-forget (failures don't affect the result)
-   4. The `stored_id` from the IPv6 response is returned and persisted
+   4. The stored ID from the IPv6 response is returned and persisted
 
    If a custom server URL is configured via `SdkConfig.Builder.serverUrl()`, the
    dual-request flow is disabled and only a single request is sent.
+
+### Terminology: Stored ID vs Tracking Token
+
+These are two names for related but distinct concepts:
+
+- **Stored ID** (`stored_id`): The server-generated identifier returned in the
+  API response and persisted locally via `StoredIDStorage`. Used internally
+  throughout the SDK (model classes, storage, network layer, comments, logs).
+- **Tracking token** (`trackingToken`): The value exposed to SDK consumers via
+  `TrackingResult.trackingToken`, intended for passing to the minFraud API's
+  `/device/tracking_token` field.
+
+Today they happen to be the same value, but the abstraction exists so the
+public-facing token format can change independently of the internal stored ID.
+Use "stored ID" in internal code and "tracking token" only in public API
+surfaces.
 
 ### Data Model
 
 **DeviceData** (`model/DeviceData.kt`):
 
-- Marked with `@Serializable` for kotlinx.serialization
-- All fields are public for Java compatibility
-- Immutable data class
-- Optional `deviceId` field (can be null)
+- Internal data class marked with `@Serializable` for kotlinx.serialization
+- Immutable with default values for optional fields
 
 ## Java Compatibility Strategy
 
@@ -176,17 +191,17 @@ When adding new public APIs:
 
    ```kotlin
    @JvmOverloads
-   public fun collectAndSend(callback: ((Result<Unit>) -> Unit)? = null)
+   public fun collectAndSend(callback: ((Result<TrackingResult>) -> Unit)? = null)
    ```
 
 3. **Provide callback-based alternatives to suspend functions**
 
    ```kotlin
    // Suspend function for Kotlin
-   suspend fun collectAndSend(): Result<Unit>
+   suspend fun collectAndSend(): Result<TrackingResult>
 
    // Callback version for Java
-   fun collectAndSend(callback: (Result<Unit>) -> Unit)
+   fun collectAndSend(callback: (Result<TrackingResult>) -> Unit)
    ```
 
 4. **Use explicit visibility modifiers**
@@ -216,9 +231,8 @@ All dependencies are centralized in `gradle/libs.versions.toml`:
 
 The SDK includes consumer ProGuard rules in `consumer-rules.pro`:
 
-- Keeps public SDK API
+- Keeps public SDK API classes (`DeviceTracker`, `SdkConfig`, `TrackingResult`)
 - Keeps kotlinx.serialization classes
-- Keeps Ktor classes
 - Apps using this SDK automatically inherit these rules
 
 ## Environment Setup

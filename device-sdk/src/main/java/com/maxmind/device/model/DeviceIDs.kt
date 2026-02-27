@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  * @property androidID App-scoped ID from Settings.Secure, persists across reinstalls
  */
 @Serializable
-public data class DeviceIDs(
+internal data class DeviceIDs(
     @SerialName("media_drm_id")
     val mediaDrmID: String? = null,
     @SerialName("android_id")

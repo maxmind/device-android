@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * App installation metadata.
  */
 @Serializable
-public data class InstallationInfo(
+internal data class InstallationInfo(
     @SerialName("first_install_time")
     val firstInstallTime: Long,
     @SerialName("last_update_time")

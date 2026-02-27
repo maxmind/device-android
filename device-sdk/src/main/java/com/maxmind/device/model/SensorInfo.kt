@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Information about a device sensor.
  */
 @Serializable
-public data class SensorInfo(
+internal data class SensorInfo(
     val name: String,
     val vendor: String,
     val type: Int,

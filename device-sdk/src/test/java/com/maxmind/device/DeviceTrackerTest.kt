@@ -1,9 +1,17 @@
 package com.maxmind.device
 
 import android.content.Context
+import com.maxmind.device.collector.DeviceDataCollector
 import com.maxmind.device.config.SdkConfig
+import com.maxmind.device.model.ServerResponse
+import com.maxmind.device.model.TrackingResult
+import com.maxmind.device.network.DeviceApiClient
+import com.maxmind.device.storage.StoredIDStorage
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -158,6 +166,150 @@ internal class DeviceTrackerTest {
             }
 
         assertEquals("Account ID must be positive", exception.message)
+    }
+
+    // ========== sendDeviceData Tests ==========
+
+    @Test
+    @Order(10)
+    internal fun `10 sendDeviceData saves tracking token on success`() =
+        runTest {
+            val tracker = createTrackerWithMocks()
+            val mockApiClient = getField<DeviceApiClient>(tracker, "apiClient")
+            val mockStorage = getField<StoredIDStorage>(tracker, "storedIDStorage")
+
+            val serverResponse = ServerResponse(storedID = "abc:hmac", ipVersion = 6)
+            coEvery { mockApiClient.sendDeviceData(any()) } returns Result.success(serverResponse)
+
+            val result = tracker.sendDeviceData(mockk(relaxed = true))
+
+            assertTrue(result.isSuccess)
+            assertEquals(TrackingResult(trackingToken = "abc:hmac"), result.getOrNull())
+            verify { mockStorage.save("abc:hmac") }
+        }
+
+    @Test
+    @Order(11)
+    internal fun `11 sendDeviceData fails when tracking token is null`() =
+        runTest {
+            val tracker = createTrackerWithMocks()
+            val mockApiClient = getField<DeviceApiClient>(tracker, "apiClient")
+            val mockStorage = getField<StoredIDStorage>(tracker, "storedIDStorage")
+
+            val response = ServerResponse(storedID = null)
+            coEvery { mockApiClient.sendDeviceData(any()) } returns Result.success(response)
+
+            val result = tracker.sendDeviceData(mockk(relaxed = true))
+
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is IllegalStateException)
+            assertEquals("Server response missing tracking token", result.exceptionOrNull()?.message)
+            verify(exactly = 0) { mockStorage.save(any()) }
+        }
+
+    @Test
+    @Order(12)
+    internal fun `12 sendDeviceData propagates API client failure`() =
+        runTest {
+            val tracker = createTrackerWithMocks()
+            val mockApiClient = getField<DeviceApiClient>(tracker, "apiClient")
+
+            val error = DeviceApiClient.ApiException("Server returned 500: Internal Server Error")
+            coEvery { mockApiClient.sendDeviceData(any()) } returns Result.failure(error)
+
+            val result = tracker.sendDeviceData(mockk(relaxed = true))
+
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is DeviceApiClient.ApiException)
+        }
+
+    @Test
+    @Order(13)
+    internal fun `13 sendDeviceData succeeds even when storage save fails`() =
+        runTest {
+            val tracker = createTrackerWithMocks()
+            val mockApiClient = getField<DeviceApiClient>(tracker, "apiClient")
+            val mockStorage = getField<StoredIDStorage>(tracker, "storedIDStorage")
+
+            val serverResponse = ServerResponse(storedID = "abc:hmac", ipVersion = 6)
+            coEvery { mockApiClient.sendDeviceData(any()) } returns Result.success(serverResponse)
+            every { mockStorage.save(any()) } throws RuntimeException("disk full")
+
+            val result = tracker.sendDeviceData(mockk(relaxed = true))
+
+            assertTrue(result.isSuccess)
+            assertEquals(TrackingResult(trackingToken = "abc:hmac"), result.getOrNull())
+        }
+
+    @Test
+    @Order(14)
+    internal fun `14 sendDeviceData fails when tracking token is blank`() =
+        runTest {
+            val tracker = createTrackerWithMocks()
+            val mockApiClient = getField<DeviceApiClient>(tracker, "apiClient")
+            val mockStorage = getField<StoredIDStorage>(tracker, "storedIDStorage")
+
+            val response = ServerResponse(storedID = "", ipVersion = 6)
+            coEvery { mockApiClient.sendDeviceData(any()) } returns Result.success(response)
+
+            val result = tracker.sendDeviceData(mockk(relaxed = true))
+
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+            verify(exactly = 0) { mockStorage.save(any()) }
+        }
+
+    @Test
+    @Order(15)
+    internal fun `15 collectAndSend wraps collectDeviceData exception in Result failure`() =
+        runTest {
+            val tracker = createTrackerWithMocks()
+            val mockCollector = mockk<DeviceDataCollector>()
+            setField(tracker, "deviceDataCollector", mockCollector)
+
+            every { mockCollector.collect() } throws RuntimeException("sensor failure")
+
+            val result = tracker.collectAndSend()
+
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is RuntimeException)
+            assertEquals("sensor failure", result.exceptionOrNull()?.message)
+        }
+
+    /**
+     * Creates a DeviceTracker with mock apiClient and storedIDStorage injected via reflection.
+     */
+    private fun createTrackerWithMocks(): DeviceTracker {
+        resetSingleton()
+        val tracker = DeviceTracker.initialize(mockContext, config)
+
+        val mockApiClient = mockk<DeviceApiClient>(relaxed = true)
+        val mockStorage = mockk<StoredIDStorage>(relaxed = true)
+
+        setField(tracker, "apiClient", mockApiClient)
+        setField(tracker, "storedIDStorage", mockStorage)
+
+        return tracker
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> getField(
+        obj: Any,
+        fieldName: String,
+    ): T {
+        val field = obj::class.java.getDeclaredField(fieldName)
+        field.isAccessible = true
+        return field.get(obj) as T
+    }
+
+    private fun setField(
+        obj: Any,
+        fieldName: String,
+        value: Any,
+    ) {
+        val field = obj::class.java.getDeclaredField(fieldName)
+        field.isAccessible = true
+        field.set(obj, value)
     }
 
     /**

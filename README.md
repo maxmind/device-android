@@ -58,8 +58,9 @@ class MyApplication : Application() {
 ```kotlin
 lifecycleScope.launch {
     DeviceTracker.getInstance().collectAndSend()
-        .onSuccess {
-            Log.d("SDK", "Data sent successfully")
+        .onSuccess { trackingResult ->
+            // Pass the token to your backend for minFraud integration
+            sendToBackend(trackingResult.trackingToken)
         }
         .onFailure { error ->
             Log.e("SDK", "Failed to send data", error)
@@ -71,8 +72,8 @@ lifecycleScope.launch {
 
 ```kotlin
 DeviceTracker.getInstance().collectAndSend { result ->
-    result.onSuccess {
-        Log.d("SDK", "Data sent successfully")
+    result.onSuccess { trackingResult ->
+        sendToBackend(trackingResult.trackingToken)
     }.onFailure { error ->
         Log.e("SDK", "Failed to send data", error)
     }
@@ -81,24 +82,47 @@ DeviceTracker.getInstance().collectAndSend { result ->
 
 #### Java Example
 
-```java
-DeviceTracker.getInstance().collectAndSend(result -> {
-    if (result.isSuccess()) {
-        Log.d("SDK", "Data sent successfully");
-    } else {
-        Throwable error = result.exceptionOrNull();
-        Log.e("SDK", "Failed to send data", error);
-    }
-});
-```
-
-### 3. Manual Data Collection
-
-Collect device data without sending:
+Kotlin's `Result<T>` is a value class with limited Java interop. If you need the
+tracking token in Java, add a thin Kotlin bridge to your project:
 
 ```kotlin
-val deviceData = DeviceTracker.getInstance().collectDeviceData()
-println("Device: ${deviceData.build.manufacturer} ${deviceData.build.model}")
+// In your project (e.g., DeviceTrackerBridge.kt)
+fun collectAndSend(
+    tracker: DeviceTracker,
+    onSuccess: java.util.function.Consumer<String>,
+    onFailure: java.util.function.Consumer<Throwable>,
+) {
+    tracker.collectAndSend { result ->
+        result.onSuccess { onSuccess.accept(it.trackingToken) }
+            .onFailure { onFailure.accept(it) }
+    }
+}
+```
+
+```java
+// Java caller
+collectAndSend(
+    DeviceTracker.getInstance(),
+    token -> sendToBackend(token),
+    error -> Log.e("SDK", "Failed to send data", error)
+);
+```
+
+### 3. Linking Device Data to minFraud Transactions
+
+After collecting and sending device data, pass the tracking token to the
+minFraud API to link device data with transactions:
+
+```kotlin
+lifecycleScope.launch {
+    DeviceTracker.getInstance().collectAndSend()
+        .onSuccess { trackingResult ->
+            // Pass trackingResult.trackingToken to your backend,
+            // then include it in the minFraud request's
+            // /device/tracking_token field
+            sendToBackend(trackingResult.trackingToken)
+        }
+}
 ```
 
 ## Configuration Options

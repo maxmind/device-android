@@ -1,11 +1,6 @@
 # Consumer ProGuard rules for MaxMind Device SDK
 # These rules will be automatically applied to apps that use this library
 
-# Keep public SDK API
--keep public class com.maxmind.device.** {
-    public protected *;
-}
-
 # Keep SDK entry points
 -keep class com.maxmind.device.DeviceTracker { *; }
 
@@ -16,9 +11,10 @@
 # Kotlin serialization rules for SDK data classes
 -keepattributes InnerClasses
 
-# Keep all model classes (data classes with @Serializable)
--keep class com.maxmind.device.model.** { *; }
+# Keep public model classes
+-keep class com.maxmind.device.model.TrackingResult { *; }
 
+# Keep serialization support for all model classes (needed at runtime)
 -keepclassmembers class com.maxmind.device.model.** {
     *** Companion;
     kotlinx.serialization.KSerializer serializer(...);

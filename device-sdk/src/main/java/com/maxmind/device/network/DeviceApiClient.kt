@@ -1,5 +1,6 @@
 package com.maxmind.device.network
 
+import android.util.Log
 import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.DeviceData
 import com.maxmind.device.model.ServerResponse
@@ -21,6 +22,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * HTTP client for communicating with MaxMind device API.
@@ -41,7 +43,6 @@ internal class DeviceApiClient(
 ) {
     private val json =
         Json {
-            prettyPrint = true
             isLenient = true
             ignoreUnknownKeys = true
         }
@@ -75,7 +76,7 @@ internal class DeviceApiClient(
      * If a custom server URL is set, sends only to that URL.
      *
      * @param deviceData The device data to send
-     * @return [Result] containing the server response with stored ID, or an error
+     * @return [Result] containing the server response with tracking token, or an error
      */
     suspend fun sendDeviceData(deviceData: DeviceData): Result<ServerResponse> =
         if (config.useDefaultServers) {
@@ -109,7 +110,13 @@ internal class DeviceApiClient(
                 )
             // Send to IPv4 but don't fail the overall operation if it fails
             // The stored_id from IPv6 is already valid
-            sendToUrl(dataWithDuration, ipv4Url)
+            val ipv4Result = sendToUrl(dataWithDuration, ipv4Url)
+            if (config.enableLogging) {
+                ipv4Result.fold(
+                    onSuccess = { Log.d(TAG, "IPv4 device data sent successfully") },
+                    onFailure = { e -> Log.d(TAG, "IPv4 device data send failed (non-fatal)", e) },
+                )
+            }
         }
 
         // Return the IPv6 response (which has the stored_id)
@@ -148,6 +155,8 @@ internal class DeviceApiClient(
                     ApiException("Server returned ${response.status.value}: ${response.status.description}"),
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (
             @Suppress("TooGenericExceptionCaught") e: Exception,
         ) {

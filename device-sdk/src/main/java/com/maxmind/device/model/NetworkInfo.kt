@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Network context information.
  */
 @Serializable
-public data class NetworkInfo(
+internal data class NetworkInfo(
     @SerialName("connection_type")
     val connectionType: String? = null,
     @SerialName("is_metered")

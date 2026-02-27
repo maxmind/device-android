@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Camera hardware capabilities from CameraManager.
  */
 @Serializable
-public data class CameraInfo(
+internal data class CameraInfo(
     @SerialName("camera_id")
     val cameraID: String,
     val facing: Int,

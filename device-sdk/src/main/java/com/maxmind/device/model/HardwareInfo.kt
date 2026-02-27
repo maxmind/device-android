@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Hardware resource information.
  */
 @Serializable
-public data class HardwareInfo(
+internal data class HardwareInfo(
     @SerialName("cpu_cores")
     val cpuCores: Int,
     @SerialName("total_memory_bytes")

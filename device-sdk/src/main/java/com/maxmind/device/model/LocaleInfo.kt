@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Locale and regional information.
  */
 @Serializable
-public data class LocaleInfo(
+internal data class LocaleInfo(
     val language: String,
     val country: String,
     val timezone: String,

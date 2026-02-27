@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Media codec support information.
  */
 @Serializable
-public data class CodecInfo(
+internal data class CodecInfo(
     val audio: List<CodecDetail> = emptyList(),
     val video: List<CodecDetail> = emptyList(),
 )
@@ -16,7 +16,7 @@ public data class CodecInfo(
  * Details about a specific codec.
  */
 @Serializable
-public data class CodecDetail(
+internal data class CodecDetail(
     val name: String,
     @SerialName("supported_types")
     val supportedTypes: List<String> = emptyList(),

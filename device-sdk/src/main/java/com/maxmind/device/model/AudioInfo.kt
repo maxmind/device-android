@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * Audio hardware profile from AudioManager.
  */
 @Serializable
-public data class AudioInfo(
+internal data class AudioInfo(
     @SerialName("output_sample_rate")
     val outputSampleRate: String? = null,
     @SerialName("output_frames_per_buffer")

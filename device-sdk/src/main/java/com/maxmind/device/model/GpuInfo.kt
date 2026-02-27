@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * GPU information from OpenGL ES.
  */
 @Serializable
-public data class GpuInfo(
+internal data class GpuInfo(
     val renderer: String? = null,
     val vendor: String? = null,
     val version: String? = null,
