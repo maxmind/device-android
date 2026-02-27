@@ -155,10 +155,8 @@ The SDK uses a **singleton pattern with initialization guard**:
 
 **DeviceData** (`model/DeviceData.kt`):
 
-- Marked with `@Serializable` for kotlinx.serialization
-- All fields are public for Java compatibility
-- Immutable data class
-- Optional `storedID` field (defaults to empty `StoredID`)
+- Internal data class marked with `@Serializable` for kotlinx.serialization
+- Immutable with default values for optional fields
 
 ## Java Compatibility Strategy
 
@@ -217,9 +215,8 @@ All dependencies are centralized in `gradle/libs.versions.toml`:
 
 The SDK includes consumer ProGuard rules in `consumer-rules.pro`:
 
-- Keeps public SDK API
+- Keeps public SDK API classes (`DeviceTracker`, `SdkConfig`, `TrackingResult`)
 - Keeps kotlinx.serialization classes
-- Keeps Ktor classes
 - Apps using this SDK automatically inherit these rules
 
 ## Environment Setup
