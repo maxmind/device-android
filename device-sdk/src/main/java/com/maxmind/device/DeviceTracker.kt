@@ -81,28 +81,35 @@ public class DeviceTracker private constructor(
      * @param deviceData The device data to send
      * @return [Result] containing the [TrackingResult] with tracking token, or failure
      */
-    internal suspend fun sendDeviceData(deviceData: DeviceData): Result<TrackingResult> =
-        apiClient.sendDeviceData(deviceData).mapCatching { response ->
-            val token =
-                response.storedID
-                    ?: error("Server response missing tracking token")
-            val result = TrackingResult(trackingToken = token)
+    @Suppress("ReturnCount")
+    internal suspend fun sendDeviceData(deviceData: DeviceData): Result<TrackingResult> {
+        val response =
+            apiClient.sendDeviceData(deviceData).getOrElse { return Result.failure(it) }
+        val token =
+            response.storedID
+                ?: return Result.failure(IllegalStateException("Server response missing tracking token"))
+        val result =
             try {
-                storedIDStorage.save(token)
-                if (config.enableLogging) {
-                    Log.d(TAG, "Stored ID saved from server response")
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (
-                @Suppress("TooGenericExceptionCaught") e: Exception,
-            ) {
-                if (config.enableLogging) {
-                    Log.e(TAG, "Failed to save stored ID to local storage", e)
-                }
+                TrackingResult(trackingToken = token)
+            } catch (e: IllegalArgumentException) {
+                return Result.failure(e)
             }
-            result
+        try {
+            storedIDStorage.save(token)
+            if (config.enableLogging) {
+                Log.d(TAG, "Stored ID saved from server response")
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (
+            @Suppress("TooGenericExceptionCaught") e: Exception,
+        ) {
+            if (config.enableLogging) {
+                Log.e(TAG, "Failed to save stored ID to local storage", e)
+            }
         }
+        return Result.success(result)
+    }
 
     /**
      * Collects device data and sends it to MaxMind servers in one operation.
