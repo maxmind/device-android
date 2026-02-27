@@ -13,10 +13,6 @@
     <color name="text_secondary">#8A000000</color>
     <color name="text_on_primary">#FFFFFFFF</color>
 
-    <!-- Section header colors -->
-    <color name="section_header">#FF00796B</color>
-    <color name="section_content">#FF37474F</color>
-
     <!-- Background -->
     <color name="surface">#FFFAFAFA</color>
     <color name="card_background">#FFFFFFFF</color>
