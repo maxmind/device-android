@@ -43,7 +43,6 @@ internal class DeviceApiClient(
 ) {
     private val json =
         Json {
-            prettyPrint = true
             isLenient = true
             ignoreUnknownKeys = true
         }
