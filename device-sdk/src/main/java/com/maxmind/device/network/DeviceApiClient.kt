@@ -21,6 +21,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * HTTP client for communicating with MaxMind device API.
@@ -148,6 +149,8 @@ internal class DeviceApiClient(
                     ApiException("Server returned ${response.status.value}: ${response.status.description}"),
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (
             @Suppress("TooGenericExceptionCaught") e: Exception,
         ) {
