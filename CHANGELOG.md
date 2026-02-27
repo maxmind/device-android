@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0 (2026-02-27)
 
 - **Breaking:** `collectAndSend()` now returns `Result<TrackingResult>` instead
   of `Result<Unit>`. The `TrackingResult` contains a `trackingToken` property
