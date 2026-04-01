@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 (TBD)
+
+- Fixed `enableLogging` not being forwarded from `SdkConfig` to
+  `DeviceDataCollector`, which caused collector-level error logs to be silently
+  suppressed even when logging was explicitly enabled.
+
 ## 0.2.0 (2026-02-27)
 
 - **Breaking:** `collectAndSend()` now returns `Result<TrackingResult>` instead

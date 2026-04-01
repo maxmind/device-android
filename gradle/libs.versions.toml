@@ -11,19 +11,19 @@ serialization = "1.10.0"
 
 # Android
 androidGradlePlugin = "8.13.1"
-androidxCore = "1.17.0"
+androidxCore = "1.18.0"
 androidxAppCompat = "1.7.1"
 androidxLifecycle = "2.10.0"
 
 # Networking
-ktor = "3.4.0"
+ktor = "3.4.2"
 
 # Code quality
 detekt = "1.23.8"
-ktlint = "14.0.1"
+ktlint = "14.2.0"
 
 # Documentation
-dokka = "2.1.0"
+dokka = "2.2.0"
 
 # Testing
 junit = "4.13.2"

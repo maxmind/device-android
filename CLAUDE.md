@@ -237,7 +237,14 @@ The SDK includes consumer ProGuard rules in `consumer-rules.pro`:
 
 ## Environment Setup
 
-**Required:**
+**Quick setup with mise (recommended for headless environments):**
+
+```bash
+mise install        # Installs Java 21, Android SDK cmdline-tools, etc.
+mise run setup      # Accepts licenses, installs platform packages, creates local.properties
+```
+
+**Manual setup:**
 
 1. Java 21 (Android Studio JDK) configured in `gradle.properties`:
 
@@ -245,7 +252,7 @@ The SDK includes consumer ProGuard rules in `consumer-rules.pro`:
    org.gradle.java.home=/home/greg/.local/share/android-studio/jbr
    ```
 
-2. Android SDK with API 34 at `~/Android/Sdk`
+2. Android SDK with API 36 at `~/Android/Sdk`
 
 3. `local.properties` file (gitignored):
    ```properties

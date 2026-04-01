@@ -48,7 +48,7 @@ public class DeviceTracker private constructor(
 ) {
     private val applicationContext: Context = context.applicationContext
     private val storedIDStorage = StoredIDStorage(applicationContext)
-    private val deviceDataCollector = DeviceDataCollector(applicationContext, storedIDStorage)
+    private val deviceDataCollector = DeviceDataCollector(applicationContext, storedIDStorage, config.enableLogging)
     private val apiClient = DeviceApiClient(config)
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

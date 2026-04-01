@@ -1,6 +1,7 @@
 package com.maxmind.device
 
 import android.content.Context
+import android.util.Log
 import com.maxmind.device.collector.DeviceDataCollector
 import com.maxmind.device.config.SdkConfig
 import com.maxmind.device.model.ServerResponse
@@ -10,6 +11,8 @@ import com.maxmind.device.storage.StoredIDStorage
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -261,7 +264,30 @@ internal class DeviceTrackerTest {
 
     @Test
     @Order(15)
-    internal fun `15 collectAndSend wraps collectDeviceData exception in Result failure`() =
+    internal fun `15 enableLogging is forwarded to DeviceDataCollector`() {
+        resetSingleton()
+        mockkStatic(Log::class)
+        every { Log.d(any(), any()) } returns 0
+        try {
+            val loggingConfig =
+                SdkConfig
+                    .Builder(12345)
+                    .enableLogging(true)
+                    .build()
+            val tracker = DeviceTracker.initialize(mockContext, loggingConfig)
+
+            val collector = getField<DeviceDataCollector>(tracker, "deviceDataCollector")
+            val enableLogging = getField<Boolean>(collector, "enableLogging")
+
+            assertTrue(enableLogging, "enableLogging should be forwarded from SdkConfig to DeviceDataCollector")
+        } finally {
+            unmockkStatic(Log::class)
+        }
+    }
+
+    @Test
+    @Order(16)
+    internal fun `16 collectAndSend wraps collectDeviceData exception in Result failure`() =
         runTest {
             val tracker = createTrackerWithMocks()
             val mockCollector = mockk<DeviceDataCollector>()
