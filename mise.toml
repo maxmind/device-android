@@ -4,3 +4,29 @@ java = "temurin-21"
 # yq is used by release.sh to parse ~/.m2/settings.xml for Maven Central credentials
 yq = "latest"
 "github:houseabsolute/precious" = "latest"
+android-sdk = "latest"
+
+[tasks.setup]
+description = "Install Android SDK platform packages and configure local.properties"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Accepting Android SDK licenses..."
+yes 2>/dev/null | sdkmanager --licenses > /dev/null 2>&1 || true
+
+echo "Installing required SDK packages..."
+sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+if [ ! -f local.properties ]; then
+  echo "sdk.dir=$ANDROID_HOME" > local.properties
+  echo "Created local.properties with sdk.dir=$ANDROID_HOME"
+elif ! grep -q '^sdk.dir=' local.properties; then
+  echo "sdk.dir=$ANDROID_HOME" >> local.properties
+  echo "Added sdk.dir=$ANDROID_HOME to local.properties"
+else
+  echo "local.properties already has sdk.dir configured"
+fi
+
+echo "Setup complete. Run './gradlew :device-sdk:test' to verify."
+"""
