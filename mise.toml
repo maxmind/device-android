@@ -4,6 +4,10 @@ java = "temurin-21"
 # yq is used by release.sh to parse ~/.m2/settings.xml for Maven Central credentials
 yq = "latest"
 "github:houseabsolute/precious" = "latest"
+# yamllint is used by precious for YAML linting
+yamllint = "latest"
+# prettier is used by precious for Markdown formatting
+prettier = "latest"
 android-sdk = "latest"
 
 [tasks.setup]

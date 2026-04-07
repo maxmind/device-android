@@ -13,12 +13,12 @@ expect-stderr = true
 type = "both"
 include = ["**/*.md"]
 exclude = [".idea/**", "build/**"]
-cmd = ["npx", "prettier", "--parser", "markdown", "--prose-wrap", "always"]
+cmd = ["prettier", "--parser", "markdown", "--prose-wrap", "always"]
 lint-flags = ["--check"]
 tidy-flags = ["--write"]
 ok-exit-codes = 0
 lint-failure-exit-codes = 1
-ignore-stderr = ["Code style issues", "npm warn exec"]
+ignore-stderr = ["Code style issues"]
 
 [commands.yamllint]
 type = "lint"
