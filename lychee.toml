@@ -34,6 +34,10 @@ exclude = [
     # Device-tracking API endpoints: live collection endpoints hit by the SDK,
     # not browsable pages.
     '^https?://d-ipv[46]\.mmapiws\.com',
+    # Placeholder example/test server hosts used in docstrings and unit tests
+    # (not real, resolvable endpoints).
+    '^https://custom\.maxmind\.com',
+    '^https://test\.maxmind\.com',
     # Local / placeholder URLs (e.g. example hosts in docs and tests)
     '^file://',
     '^https?://example\.(com|org|net)',
