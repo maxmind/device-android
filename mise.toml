@@ -1,3 +1,6 @@
+[settings]
+lockfile = true
+
 [tools]
 # Java 21 is required - Dokka doesn't support Java 25+ yet
 java = "temurin-21"
