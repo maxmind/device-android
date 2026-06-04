@@ -9,6 +9,7 @@ yamllint = "latest"
 # prettier is used by precious for Markdown formatting
 prettier = "latest"
 android-sdk = "latest"
+lychee = "latest"
 
 [tasks.setup]
 description = "Install Android SDK platform packages and configure local.properties"
@@ -34,3 +35,7 @@ fi
 
 echo "Setup complete. Run './gradlew :device-sdk:test' to verify."
 """
+
+[tasks.check-links]
+description = "Check links with lychee"
+run = "lychee --no-progress './**/*.md' './**/*.kt' './**/*.java'"
