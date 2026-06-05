@@ -1,3 +1,6 @@
+[settings]
+lockfile = true
+
 [tools]
 # Java 21 is required - Dokka doesn't support Java 25+ yet
 java = "temurin-21"
@@ -9,6 +12,7 @@ yamllint = "latest"
 # prettier is used by precious for Markdown formatting
 prettier = "latest"
 android-sdk = "latest"
+lychee = "latest"
 
 [tasks.setup]
 description = "Install Android SDK platform packages and configure local.properties"
@@ -34,3 +38,7 @@ fi
 
 echo "Setup complete. Run './gradlew :device-sdk:test' to verify."
 """
+
+[tasks.check-links]
+description = "Check links with lychee"
+run = "lychee --no-progress './**/*.md' './**/*.kt' './**/*.java'"

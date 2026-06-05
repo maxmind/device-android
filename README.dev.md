@@ -83,8 +83,7 @@ and enter `trust` and choose ultimate.
 Make sure the key shows up in `gpg --list-secret-keys`.
 
 Make sure you publish it to a keyserver. See
-[here](http://central.sonatype.org/pages/working-with-pgp-signatures.html) for
-more info.
+[here](https://central.sonatype.org/publish/requirements/gpg/) for more info.
 
 ### gpg "inappropriate ioctl" errors
 

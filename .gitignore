@@ -114,3 +114,6 @@ sample/src/main/res/xml/network_security_config.xml
 device-sdk-*.aar
 device-sdk-*.jar
 *.asc
+
+# Lychee link checker cache
+.lycheecache
