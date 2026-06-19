@@ -3,6 +3,7 @@ package com.maxmind.device.collector
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaDrm
+import android.os.Build
 import android.provider.Settings
 import android.util.Base64
 import android.util.Log
@@ -46,7 +47,12 @@ internal class DeviceIDsCollector(
                 val deviceId = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
                 Base64.encodeToString(deviceId, Base64.NO_WRAP)
             } finally {
-                mediaDrm.close()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    mediaDrm.close()
+                } else {
+                    @Suppress("DEPRECATION")
+                    mediaDrm.release()
+                }
             }
         } catch (
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
