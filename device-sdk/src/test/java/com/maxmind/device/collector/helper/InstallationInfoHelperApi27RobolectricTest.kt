@@ -27,8 +27,12 @@ internal class InstallationInfoHelperApi27RobolectricTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val shadowPm = Shadows.shadowOf(context.packageManager)
 
-        // On API 27 the helper reads the deprecated int versionCode field, not longVersionCode.
         val packageInfo = shadowPm.getInternalMutablePackageInfo(context.packageName)
+        // Set only the legacy int versionCode field. The API-28 longVersionCode accessor does
+        // not exist in the API-27 runtime Robolectric loads here, so we cannot (and need not)
+        // pack a major version. This also makes the test discriminate the branch: if the
+        // production guard regressed to read packageInfo.longVersionCode at API 27, collect()
+        // would throw NoSuchMethodError (it is not caught) and this assertion would never run.
         @Suppress("DEPRECATION")
         packageInfo.versionCode = 456
         packageInfo.versionName = "9.8.7"
@@ -36,7 +40,7 @@ internal class InstallationInfoHelperApi27RobolectricTest {
         val helper = InstallationInfoHelper(context)
         val result = helper.collect()
 
-        assertEquals(456L, result.versionCode, "versionCode should come from the legacy int field")
+        assertEquals(456L, result.versionCode, "versionCode should come from the legacy int field on API 27")
         assertEquals("9.8.7", result.versionName, "versionName should match stubbed value")
     }
 
