@@ -212,15 +212,6 @@ When adding new public APIs:
 
 All dependencies are centralized in `gradle/libs.versions.toml`:
 
-**Key Dependencies:**
-
-- Ktor 2.3.7 (HTTP client with Android engine)
-- kotlinx.serialization 1.6.2 (JSON serialization)
-- kotlinx.coroutines 1.7.3 (async operations)
-- Detekt 1.23.5 (Kotlin linting)
-- ktlint 12.1.0 (code formatting)
-- Dokka 1.9.10 (API documentation)
-
 **To update a dependency:**
 
 1. Edit version in `gradle/libs.versions.toml`

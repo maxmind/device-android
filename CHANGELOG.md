@@ -1,7 +1,11 @@
 # Changelog
 
-## 0.2.1 (TBD)
+## 0.3.0 (TBD)
 
+- Lowered the minimum supported Android API level from 29 (Android 10) to 27
+  (Android 8.1). Device data collection on API 27 and 28 falls back to
+  pre-API-28 methods for the app version code and MediaDRM cleanup; no collected
+  signals are lost.
 - Fixed `enableLogging` not being forwarded from `SdkConfig` to
   `DeviceDataCollector`, which caused collector-level error logs to be silently
   suppressed even when logging was explicitly enabled.

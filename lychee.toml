@@ -4,8 +4,10 @@
 # Run locally with:
 #   lychee './**/*.md' './**/*.kt' './**/*.java'
 
-# Include URL fragments in checks
-include_fragments = true
+# Check fragments in links. Since lychee 0.24 this is a string enum
+# (none | anchor-only | text-only | full), not a boolean. "full" checks both
+# anchor fragments (#section) and text fragments (#:~:text=...).
+include_fragments = "full"
 
 # Don't allow any redirects, so links that have moved are surfaced and can be
 # updated to their canonical destination.

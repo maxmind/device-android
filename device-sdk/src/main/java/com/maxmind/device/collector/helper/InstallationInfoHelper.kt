@@ -22,7 +22,12 @@ internal class InstallationInfoHelper(
     public fun collect(): InstallationInfo {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
-        val versionCode = packageInfo.longVersionCode
+        val versionCode =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode
+            } else {
+                packageInfo.versionCode.toLong()
+            }
 
         val installerPackage =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
