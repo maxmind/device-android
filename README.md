@@ -5,7 +5,7 @@ Android SDK for collecting and reporting device data to MaxMind.
 ## Requirements
 
 - Android API 27+ (Android 8.1+)
-- Kotlin 2.2.21+
+- A recent stable version of Kotlin
 - AndroidX libraries
 
 ## Installation
@@ -16,7 +16,7 @@ Add the dependency to your app's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.maxmind.device:device-sdk:0.2.0")
+    implementation("com.maxmind.device:device-sdk:0.3.0")
 }
 ```
 
@@ -24,7 +24,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.maxmind.device:device-sdk:0.2.0'
+    implementation 'com.maxmind.device:device-sdk:0.3.0'
 }
 ```
 
