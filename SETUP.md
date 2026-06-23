@@ -2,40 +2,50 @@
 
 ## Prerequisites
 
-- Java 17+ (Android Studio includes JDK 21)
-- Android SDK with API 34
-- Gradle 8.5+ (included via wrapper)
+- Java (the required version is pinned in `mise.toml`)
+- Android SDK (install the platform and build-tools matching the `compileSdk` in
+  `gradle/libs.versions.toml`)
+- Gradle (included via the wrapper)
 
 ## Initial Setup
 
 ### 1. Install Android SDK
 
-#### Option A: Using Android Studio (Recommended)
+#### Option A: Using mise (Recommended)
+
+[mise](https://mise.jdx.dev/) reads `mise.toml` and installs the toolchain at
+the versions this project expects, so you don't have to track them by hand:
+
+```bash
+mise install      # Installs Java, the Android SDK command-line tools, etc.
+mise run setup    # Accepts licenses, installs platform packages, writes local.properties
+```
+
+This also creates `local.properties`, so you can skip step 2 below.
+
+#### Option B: Using Android Studio
 
 1. Open Android Studio
 2. Navigate to **Tools → SDK Manager**
-3. Install the following components:
-   - **SDK Platforms**: Android 14.0 (API 34)
-   - **SDK Tools**:
-     - Android SDK Build-Tools 34
-     - Android SDK Command-line Tools
-     - Android SDK Platform-Tools
+3. Install the platform and build-tools matching the `compileSdk` in
+   `gradle/libs.versions.toml`, plus the Command-line Tools and Platform-Tools
 4. Accept all licenses when prompted
 5. Note the SDK location path (shown at top of SDK Manager)
 
-#### Option B: Command Line
+#### Option C: Command Line
 
 ```bash
-# Download command-line tools
+# Download the latest command-line tools ("Command line tools only") from
+# https://developer.android.com/studio and unpack them:
 mkdir -p ~/Android/Sdk/cmdline-tools
 cd ~/Android/Sdk/cmdline-tools
-wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-unzip commandlinetools-linux-9477386_latest.zip
+unzip ~/Downloads/commandlinetools-linux-*.zip
 mv cmdline-tools latest
 
-# Accept licenses and install components
+# Accept licenses, then install the platform and build-tools for the project's
+# compileSdk (see gradle/libs.versions.toml). For example, if compileSdk = 36:
 ~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 ```
 
 ### 2. Configure SDK Location
