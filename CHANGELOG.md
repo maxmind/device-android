@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (TBD)
+## 0.3.0 (2026-06-23)
 
 - Lowered the minimum supported Android API level from 29 (Android 10) to 27
   (Android 8.1). Device data collection on API 27 and 28 falls back to
