@@ -4,9 +4,13 @@ name: Dependabot Failure Watcher
 # "Dependabot Updates". This watcher fails (goes red in the Actions tab) whenever
 # one of those runs completes with a failure, so a silently-broken ecosystem is
 # visible instead of only appearing as a red triangle in the Dependabot tab.
+#
+# This workflow checks out no code, consumes no untrusted input in a dangerous
+# way, and holds no permissions (permissions: {}), so the usual workflow_run
+# risks do not apply; the trigger is required to observe Dependabot job outcomes.
 
 on:
-  workflow_run:
+  workflow_run:  # zizmor: ignore[dangerous-triggers] no checkout, no secrets, permissions: {}; only reads the run conclusion and reports.
     workflows: ["Dependabot Updates"]
     types: [completed]
 
@@ -18,7 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fail on a failed Dependabot run
+        env:
+          TITLE: ${{ github.event.workflow_run.display_title }}
+          URL: ${{ github.event.workflow_run.html_url }}
         run: |
-          echo "::error::Dependabot Updates run failed: ${{ github.event.workflow_run.display_title }}"
-          echo "See: ${{ github.event.workflow_run.html_url }}"
+          echo "::error::Dependabot Updates run failed: ${TITLE}"
+          echo "See: ${URL}"
           exit 1
