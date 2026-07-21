@@ -1,0 +1,24 @@
+name: Dependabot Failure Watcher
+
+# Dependabot version updates now run as ordinary Actions workflow runs named
+# "Dependabot Updates". This watcher fails (goes red in the Actions tab) whenever
+# one of those runs completes with a failure, so a silently-broken ecosystem is
+# visible instead of only appearing as a red triangle in the Dependabot tab.
+
+on:
+  workflow_run:
+    workflows: ["Dependabot Updates"]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  report-failure:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail on a failed Dependabot run
+        run: |
+          echo "::error::Dependabot Updates run failed: ${{ github.event.workflow_run.display_title }}"
+          echo "See: ${{ github.event.workflow_run.html_url }}"
+          exit 1
