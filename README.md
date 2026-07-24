@@ -205,11 +205,11 @@ Documentation will be generated in `device-sdk/build/dokka/`.
 
 ## License
 
-This software is Copyright (c) 2025 by MaxMind, Inc.
+This software is Copyright (c) 2025-2026 by MaxMind, Inc.
 
 This is free software, licensed under the
 [Apache License, Version 2.0](LICENSE-APACHE) or the [MIT License](LICENSE-MIT),
-at your option. Copyright 2025 MaxMind, Inc.
+at your option. Copyright 2025-2026 MaxMind, Inc.
 
 ## Support
 
