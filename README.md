@@ -5,6 +5,7 @@ Android SDK for collecting and reporting device data to MaxMind.
 ## Requirements
 
 - Android API 27+ (Android 8.1+)
+- `compileSdk` 30+
 - A recent stable version of Kotlin
 - AndroidX libraries
 

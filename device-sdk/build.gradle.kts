@@ -29,6 +29,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
+        // The lowest compileSdk consumers can build against.
+        // InstallationInfoHelper references android.content.pm.InstallSourceInfo
+        // (API 30), so R8 reports it as a missing class for consumers minifying
+        // below that, and declaring the floor turns that into a clear Gradle
+        // error. Setting it explicitly also pins the value rather than
+        // inheriting whatever the Android Gradle plugin defaults to.
+        aarMetadata {
+            minCompileSdk = 30
+        }
+
         // Build config fields for SDK metadata
         buildConfigField("String", "SDK_VERSION", "\"${project.version}\"")
         buildConfigField("String", "SDK_NAME", "\"MaxMind Device SDK\"")
