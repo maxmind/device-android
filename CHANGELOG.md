@@ -11,6 +11,10 @@
   new requirement rather than a pre-existing one. The API-30 call is guarded by
   an `SDK_INT` check and is safe at runtime, so the floor trades an obscure R8
   failure for a clear Gradle error.
+- The SDK is now built with Gradle 9.6.1 and the Android Gradle plugin 9.3.1.
+  The public API and the published ABI are unchanged, and the artifact still
+  imposes no Android Gradle plugin floor on consumers, so the toolchain change
+  itself requires no action from consumers.
 
 ## 0.3.1 (2026-07-24)
 

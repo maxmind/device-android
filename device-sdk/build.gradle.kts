@@ -2,7 +2,6 @@ import java.net.URI
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.dokka)
     alias(libs.plugins.detekt)
@@ -73,6 +72,19 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+
+        // Pins the published ABI -- do not remove. The Kotlin module name is
+        // baked into kotlin.Metadata and into the mangled JVM names of internal
+        // members, so changing it rewrites the ABI of every class without any
+        // source change. "device-sdk_release" is the name 0.3.1 and earlier
+        // published; AGP 9's built-in Kotlin would otherwise use the project
+        // name. japicmp enforces this, so deleting the line fails api-compat.
+        //
+        // Setting it in the shared compilerOptions block gives every compilation
+        // the same name instead of AGP 8's per-variant names. That is harmless
+        // (.kotlin_module files are stripped from APKs) and means the unit tests
+        // exercise the same mangled names that ship in the release AAR.
+        moduleName.set("device-sdk_release")
 
         // Enable explicit API mode for better library API design
         freeCompilerArgs.addAll(

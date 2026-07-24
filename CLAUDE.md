@@ -307,7 +307,7 @@ Uses Gradle version catalog in `gradle/libs.versions.toml`:
 - `[plugins]` - Gradle plugins
 - `[bundles]` - Grouped dependencies (e.g., `ktor`, `testing`)
 
-Access in build files: `libs.ktor.client.core`, `libs.plugins.kotlin.android`
+Access in build files: `libs.ktor.client.core`, `libs.plugins.android.library`
 
 ## Maven Publishing Configuration
 
