@@ -24,3 +24,32 @@ jobs:
 
       - name: Check API Compatibility
         run: ./gradlew :device-sdk:japicmp
+
+      # japicmp only compares classes.jar, so nothing guards the parts of the AAR
+      # that decide who can consume it. AGP 9 defaults minCompileSdk to the
+      # library's own compileSdk, which would silently raise the floor to 36 on a
+      # future compileSdk bump. These values are deliberate, so a change should
+      # have to be made here too.
+      - name: Check AAR consumer metadata
+        run: |
+          set -euo pipefail
+          aar=device-sdk/build/outputs/aar/device-sdk-release.aar
+          metadata=$(unzip -p "$aar" META-INF/com/android/build/gradle/aar-metadata.properties)
+          echo "$metadata"
+          # aarFormatVersion and aarMetadataVersion matter as much as the floors:
+          # bumping either stops older AGP versions from reading the AAR at all.
+          for expected in \
+            minCompileSdk=30 \
+            minAndroidGradlePluginVersion=1.0.0 \
+            aarFormatVersion=1.0 \
+            aarMetadataVersion=1.0; do
+            if ! grep -qxF "$expected" <<<"$metadata"; then
+              echo "::error::expected $expected in the AAR's aar-metadata.properties"
+              exit 1
+            fi
+          done
+          manifest=$(unzip -p "$aar" AndroidManifest.xml)
+          if ! grep -q 'android:minSdkVersion="27"' <<<"$manifest"; then
+            echo "::error::expected minSdkVersion 27 in the AAR manifest"
+            exit 1
+          fi
