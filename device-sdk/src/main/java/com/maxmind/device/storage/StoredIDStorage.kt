@@ -2,7 +2,6 @@ package com.maxmind.device.storage
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.core.content.edit
 
 /**
  * Manages persistent storage of server-generated stored IDs.
@@ -33,14 +32,14 @@ internal class StoredIDStorage(
      * @param id The stored ID to save (format: "{uuid}:{hmac}")
      */
     fun save(id: String) {
-        prefs.edit { putString(KEY_STORED_ID, id) }
+        prefs.edit().putString(KEY_STORED_ID, id).apply()
     }
 
     /**
      * Clears the stored ID.
      */
     fun clear() {
-        prefs.edit { remove(KEY_STORED_ID) }
+        prefs.edit().remove(KEY_STORED_ID).apply()
     }
 
     internal companion object {

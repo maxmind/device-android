@@ -78,9 +78,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
 
-    // AndroidX
-    implementation(libs.androidx.core.ktx)
-
     // Networking
     implementation(libs.bundles.ktor)
 
@@ -173,7 +170,7 @@ signing {
 // API compatibility checking with japicmp
 // Compares the current build against the latest released version on Maven Central
 // Update this version after each release (the release script should do this automatically)
-val baselineVersion = "0.3.0"
+val baselineVersion = "0.3.1"
 
 // Download baseline AAR directly from Maven Central to avoid local project resolution
 val downloadBaselineAar by tasks.registering {

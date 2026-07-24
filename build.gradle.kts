@@ -12,7 +12,7 @@ plugins {
 
 allprojects {
     group = "com.maxmind.device"
-    version = "0.3.0"
+    version = "0.3.1"
 }
 
 tasks.register("clean", Delete::class) {
