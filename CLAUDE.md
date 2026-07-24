@@ -291,7 +291,6 @@ R8 issues. For development:
 - **Unit tests** in `device-sdk/src/test/` use JUnit 5, MockK, and Robolectric
 - **Android instrumented tests** in `device-sdk/src/androidTest/`
 - Test coverage with JaCoCo
-- Turbine for testing Flows/coroutines
 
 When adding features, write unit tests that:
 
