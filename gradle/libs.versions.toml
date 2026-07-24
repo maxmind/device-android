@@ -26,7 +26,7 @@ ktlint = "14.2.0"
 dokka = "2.2.0"
 
 # Testing
-junitJupiter = "6.1.0"
+junitJupiter = "6.1.2"
 junitPlatform = "6.1.0"
 mockk = "1.14.11"
 androidxTestCore = "1.7.0"
