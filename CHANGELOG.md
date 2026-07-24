@@ -11,6 +11,12 @@
 - Removed the unused `kotlinx-coroutines-android` dependency. The SDK only uses
   `Dispatchers.IO`, so it does not need the Android `Dispatchers.Main`
   integration this artifact provides.
+- Removed the `androidx.core:core-ktx` dependency. Its only use was the
+  `SharedPreferences.edit {}` extension, which has been replaced with the
+  equivalent framework calls. The published artifact now has no `androidx`
+  dependencies, so it no longer participates in androidx version alignment and
+  imposes no `compileSdk` or Android Gradle Plugin floor on consumers.
+  Previously `core-ktx` 1.18.0 required `compileSdk` 36 and AGP 8.9.1.
 
 ## 0.3.0 (2026-06-23)
 
