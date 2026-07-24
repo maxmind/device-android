@@ -195,39 +195,42 @@ signing {
 val baselineVersion = "0.3.1"
 
 // Download baseline AAR directly from Maven Central to avoid local project resolution
-val downloadBaselineAar by tasks.registering {
-    val outputFile = layout.buildDirectory.file("japicmp/baseline.aar")
-    outputs.file(outputFile)
-    doLast {
-        val url = "https://repo1.maven.org/maven2/com/maxmind/device/device-sdk/$baselineVersion/device-sdk-$baselineVersion.aar"
-        val destFile = outputFile.get().asFile
-        destFile.parentFile.mkdirs()
-        URI(url).toURL().openStream().use { input ->
-            destFile.outputStream().use { output ->
-                input.copyTo(output)
+val downloadBaselineAar =
+    tasks.register("downloadBaselineAar") {
+        val outputFile = layout.buildDirectory.file("japicmp/baseline.aar")
+        outputs.file(outputFile)
+        doLast {
+            val url = "https://repo1.maven.org/maven2/com/maxmind/device/device-sdk/$baselineVersion/device-sdk-$baselineVersion.aar"
+            val destFile = outputFile.get().asFile
+            destFile.parentFile.mkdirs()
+            URI(url).toURL().openStream().use { input ->
+                destFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
             }
+            logger.lifecycle("Downloaded baseline AAR from $url")
         }
-        logger.lifecycle("Downloaded baseline AAR from $url")
     }
-}
 
 // Extract classes.jar from baseline AAR for comparison
-val extractBaselineClasses by tasks.registering(Copy::class) {
-    dependsOn(downloadBaselineAar)
-    from(zipTree(layout.buildDirectory.file("japicmp/baseline.aar"))) {
-        include("classes.jar")
+val extractBaselineClasses =
+    tasks.register<Copy>("extractBaselineClasses") {
+        dependsOn(downloadBaselineAar)
+        from(zipTree(layout.buildDirectory.file("japicmp/baseline.aar"))) {
+            include("classes.jar")
+        }
+        into(layout.buildDirectory.dir("japicmp/baseline"))
     }
-    into(layout.buildDirectory.dir("japicmp/baseline"))
-}
 
 // Extract classes.jar from current AAR for comparison
-val extractCurrentClasses by tasks.registering(Copy::class) {
-    dependsOn("bundleReleaseAar")
-    from(zipTree(layout.buildDirectory.file("outputs/aar/device-sdk-release.aar"))) {
-        include("classes.jar")
+val extractCurrentClasses =
+    tasks.register<Copy>("extractCurrentClasses") {
+        dependsOn("bundleReleaseAar")
+        from(zipTree(layout.buildDirectory.file("outputs/aar/device-sdk-release.aar"))) {
+            include("classes.jar")
+        }
+        into(layout.buildDirectory.dir("japicmp/current"))
     }
-    into(layout.buildDirectory.dir("japicmp/current"))
-}
 
 tasks.register<me.champeau.gradle.japicmp.JapicmpTask>("japicmp") {
     dependsOn(extractBaselineClasses, extractCurrentClasses)
