@@ -51,9 +51,6 @@ Follow Kotlin conventions (kotlinlang.org/docs/coding-conventions.html):
 
 # Run specific test class
 ./gradlew :device-sdk:test --tests "com.maxmind.device.DeviceTrackerTest"
-
-# Run tests with coverage (JaCoCo)
-./gradlew :device-sdk:testDebugUnitTest jacocoTestReport
 ```
 
 ### Code Quality
@@ -66,7 +63,7 @@ Follow Kotlin conventions (kotlinlang.org/docs/coding-conventions.html):
 ./gradlew ktlintFormat
 
 # Generate API documentation
-./gradlew :device-sdk:dokkaHtml
+./gradlew :device-sdk:dokkaGenerate
 # Output: device-sdk/build/dokka/
 ```
 
@@ -269,7 +266,6 @@ mise run setup      # Accepts licenses, installs platform packages, creates loca
 **"Resource mipmap/ic_launcher not found"**
 
 - Sample app has no launcher icons (intentional for simplicity)
-- Build works for `assembleDebug`, may fail on `assemble` (release variant)
 
 **Detekt/ktlint failures**
 
@@ -278,19 +274,16 @@ mise run setup      # Accepts licenses, installs platform packages, creates loca
 
 ### Release Build MinifyEnabled
 
-The sample app has `isMinifyEnabled = true` for release builds, which may cause
-R8 issues. For development:
-
-```bash
-# Build debug variant instead
-./gradlew :sample:assembleDebug
-```
+The sample app has `isMinifyEnabled = true` for release builds, so
+`:sample:assembleRelease` is what exercises R8 against the SDK and its consumer
+ProGuard rules. CI runs it on every push, so it is expected to pass; if it
+starts failing, treat that as a real R8 or keep-rule problem rather than an
+expected quirk of the sample.
 
 ## Testing Strategy
 
 - **Unit tests** in `device-sdk/src/test/` use JUnit 5, MockK, and Robolectric
 - **Android instrumented tests** in `device-sdk/src/androidTest/`
-- Test coverage with JaCoCo
 
 When adding features, write unit tests that:
 

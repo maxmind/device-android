@@ -93,7 +93,7 @@ Replace `/path/to/your/Android/Sdk` with your actual SDK location:
 ./gradlew :sample:installDebug
 
 # Generate documentation
-./gradlew dokkaHtml
+./gradlew :device-sdk:dokkaGenerate
 ```
 
 ## Publishing to Maven Central

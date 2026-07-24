@@ -190,7 +190,7 @@ To run the sample app:
 ### Generate Documentation
 
 ```bash
-./gradlew :device-sdk:dokkaHtml
+./gradlew :device-sdk:dokkaGenerate
 ```
 
 Documentation will be generated in `device-sdk/build/dokka/`.
