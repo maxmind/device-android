@@ -83,16 +83,11 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // AndroidX
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
     // Material Design
     implementation(libs.material)
-
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.test.junit)
 }
 
 // Detekt configuration

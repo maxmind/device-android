@@ -8,6 +8,9 @@
   androidx version alignment, in turn requiring compileSdk 37 and a newer
   Android Gradle Plugin. The SDK never used this dependency, and removing it
   eliminates the toolchain requirement. Reported by Dzmitry Struk. GitHub #63.
+- Removed the unused `kotlinx-coroutines-android` dependency. The SDK only uses
+  `Dispatchers.IO`, so it does not need the Android `Dispatchers.Main`
+  integration this artifact provides.
 
 ## 0.3.0 (2026-06-23)
 
