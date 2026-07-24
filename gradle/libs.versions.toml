@@ -10,7 +10,7 @@ coroutines = "1.11.0"
 serialization = "1.11.0"
 
 # Android
-androidGradlePlugin = "8.13.1"
+androidGradlePlugin = "9.3.1"
 androidxAppCompat = "1.7.1"
 androidxLifecycle = "2.11.0"
 
