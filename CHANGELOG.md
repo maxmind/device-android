@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.1 (TBD)
+## 0.3.1 (2026-07-24)
 
 - Removed the unused `androidx.lifecycle:lifecycle-runtime-ktx` dependency. In
   0.3.0 this dependency was at version 2.11.0, which forced consumers with any
