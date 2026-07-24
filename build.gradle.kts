@@ -17,3 +17,15 @@ allprojects {
 tasks.register("clean", Delete::class) {
     delete(rootProject.layout.buildDirectory)
 }
+
+// gradle-wrapper.properties is generated, so any hand edit there is lost the next
+// time someone runs `./gradlew wrapper`. Declaring the values here means a
+// regeneration reproduces them. distributionSha256Sum is deliberately not set
+// here: it changes with every Gradle version, and Gradle already refuses to
+// regenerate the wrapper for a new version while it is present unless
+// --gradle-distribution-sha256-sum is passed. See README.dev.md.
+tasks.withType<Wrapper>().configureEach {
+    networkTimeout = 10000
+    retries = 2
+    retryBackOffMs = 500
+}
