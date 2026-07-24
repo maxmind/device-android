@@ -16,7 +16,7 @@ androidxAppCompat = "1.7.1"
 androidxLifecycle = "2.11.0"
 
 # Networking
-ktor = "3.5.0"
+ktor = "3.5.1"
 
 # Code quality
 detekt = "1.23.8"
