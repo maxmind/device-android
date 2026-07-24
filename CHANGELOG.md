@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1 (TBD)
+
+- Removed the unused `androidx.lifecycle:lifecycle-runtime-ktx` dependency. In
+  0.3.0 this dependency was at version 2.11.0, which forced consumers with any
+  `androidx.lifecycle` Compose artifacts on their classpath up to 2.11.0 via
+  androidx version alignment, in turn requiring compileSdk 37 and a newer
+  Android Gradle Plugin. The SDK never used this dependency, and removing it
+  eliminates the toolchain requirement. Reported by Dzmitry Struk. GitHub #63.
+
 ## 0.3.0 (2026-06-23)
 
 - Lowered the minimum supported Android API level from 29 (Android 10) to 27

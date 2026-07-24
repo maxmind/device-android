@@ -81,7 +81,6 @@ dependencies {
 
     // AndroidX
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
 
     // Networking
     implementation(libs.bundles.ktor)
