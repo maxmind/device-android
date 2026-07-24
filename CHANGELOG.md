@@ -10,7 +10,10 @@
   Java 9 or later compilation below 30. For consumers that do neither, this is a
   new requirement rather than a pre-existing one. The API-30 call is guarded by
   an `SDK_INT` check and is safe at runtime, so the floor trades an obscure R8
-  failure for a clear Gradle error.
+  failure for a clear Gradle error. If your build fails with a `minCompileSdk`
+  error, raise `compileSdk` to 30 or later, or stay on 0.3.1. Note this is your
+  app's `compileSdk` only: the SDK still supports API 27 and later devices, and
+  `minSdk` is unchanged.
 - The SDK is now built with Gradle 9.6.1 and the Android Gradle plugin 9.3.1.
   The public API and the published ABI are unchanged, and the artifact still
   imposes no Android Gradle plugin floor on consumers, so the toolchain change
