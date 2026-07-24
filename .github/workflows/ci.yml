@@ -39,6 +39,19 @@ jobs:
       - name: Build sample app
         run: ./gradlew :sample:assembleDebug
 
+      # The debug variants both set isMinifyEnabled = false, so this is the only
+      # step that runs R8 over the SDK's classes at all. It does not reproduce
+      # the missing-class failure that motivates minCompileSdk: that needs a
+      # consumer compiling below 30, and the sample is at compileSdk 36. The
+      # floor itself is pinned by the metadata assertion in api-compat.yml.
+      - name: Build minified sample app
+        run: ./gradlew :sample:assembleRelease
+
+      # Nothing else compiles the androidTest sources, and a toolchain upgrade is
+      # the likeliest thing to break them.
+      - name: Compile instrumented tests
+        run: ./gradlew :device-sdk:assembleDebugAndroidTest
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
