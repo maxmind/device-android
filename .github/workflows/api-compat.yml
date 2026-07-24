@@ -25,31 +25,65 @@ jobs:
       - name: Check API Compatibility
         run: ./gradlew :device-sdk:japicmp
 
-      # japicmp only compares classes.jar, so nothing guards the parts of the AAR
-      # that decide who can consume it. AGP 9 defaults minCompileSdk to the
-      # library's own compileSdk, which would silently raise the floor to 36 on a
-      # future compileSdk bump. These values are deliberate, so a change should
-      # have to be made here too.
+      # japicmp only compares classes.jar, so nothing else guards the parts of the
+      # AAR that decide who can consume it. AGP derives minCompileSdk,
+      # minCompileSdkExtension and minCompileMinorSdk from the library's own
+      # compileSdk, so a compileSdk bump can raise the consumer floor without
+      # anyone editing this repo. The whole file is compared rather than a few
+      # keys, so an added or changed key has to be acknowledged here deliberately.
+      #
+      # minAndroidGradlePluginVersion=1.0.0 holds only while
+      # android.aar.metadata.autoEncodeMinAgpVersion stays off. Its default flips
+      # in AGP 10, after which AGP derives the value from compileSdk. If this
+      # fails during an AGP upgrade, that is a real consumer-facing change to
+      # decide on, not a stale expectation to edit away.
       - name: Check AAR consumer metadata
+        if: ${{ !cancelled() }}
         run: |
           set -euo pipefail
+
+          # Build what we inspect: japicmp happens to produce the AAR today, but
+          # only as a side effect of its own task graph.
+          ./gradlew :device-sdk:bundleReleaseAar
           aar=device-sdk/build/outputs/aar/device-sdk-release.aar
+          tmp=$(mktemp -d)
+
+          expected=$(printf '%s\n' \
+            'aarFormatVersion=1.0' \
+            'aarMetadataVersion=1.0' \
+            'coreLibraryDesugaringEnabled=false' \
+            'minAndroidGradlePluginVersion=1.0.0' \
+            'minCompileSdk=30' \
+            'minCompileSdkExtension=0')
           metadata=$(unzip -p "$aar" META-INF/com/android/build/gradle/aar-metadata.properties)
           echo "$metadata"
-          # aarFormatVersion and aarMetadataVersion matter as much as the floors:
-          # bumping either stops older AGP versions from reading the AAR at all.
-          for expected in \
-            minCompileSdk=30 \
-            minAndroidGradlePluginVersion=1.0.0 \
-            aarFormatVersion=1.0 \
-            aarMetadataVersion=1.0; do
-            if ! grep -qxF "$expected" <<<"$metadata"; then
-              echo "::error::expected $expected in the AAR's aar-metadata.properties"
-              exit 1
-            fi
-          done
+          if ! diff <(sort <<<"$expected") <(sort <<<"$metadata"); then
+            echo "::error::AAR consumer metadata changed (< expected, > actual)"
+            exit 1
+          fi
+
           manifest=$(unzip -p "$aar" AndroidManifest.xml)
+          echo "$manifest"
           if ! grep -q 'android:minSdkVersion="27"' <<<"$manifest"; then
             echo "::error::expected minSdkVersion 27 in the AAR manifest"
+            exit 1
+          fi
+
+          # Direct witness for the pinned Kotlin module name. japicmp catches a
+          # change to it only while DeviceTracker still has internal members whose
+          # mangled names reach the ABI, so it would stop guarding this after an
+          # ordinary refactor.
+          unzip -p "$aar" classes.jar >"$tmp/classes.jar"
+          entries=$(unzip -l "$tmp/classes.jar")
+          if ! grep -q 'META-INF/device-sdk_release\.kotlin_module' <<<"$entries"; then
+            echo "::error::expected META-INF/device-sdk_release.kotlin_module in classes.jar"
+            grep -i 'kotlin_module' <<<"$entries" || true
+            exit 1
+          fi
+
+          # Consumer ProGuard rules have to actually ship.
+          unzip -p "$aar" proguard.txt >"$tmp/proguard.txt"
+          if [ ! -s "$tmp/proguard.txt" ]; then
+            echo "::error::proguard.txt is missing or empty in the AAR"
             exit 1
           fi
