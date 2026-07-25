@@ -243,6 +243,7 @@ mise run setup      # Accepts licenses, installs platform packages, creates loca
    `gradle/libs.versions.toml`
 
 3. `local.properties` file (gitignored):
+
    ```properties
    sdk.dir=/path/to/your/Android/Sdk
    ```
