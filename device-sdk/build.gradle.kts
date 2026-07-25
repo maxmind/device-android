@@ -219,7 +219,12 @@ val downloadBaselineAar =
             val url = "https://repo1.maven.org/maven2/com/maxmind/device/device-sdk/$baselineVersion/device-sdk-$baselineVersion.aar"
             val destFile = outputFile.get().asFile
             destFile.parentFile.mkdirs()
-            URI(url).toURL().openStream().use { input ->
+            // Bounded: an unbounded read here can hang the api-compat job until
+            // GitHub's six-hour job limit rather than failing.
+            val connection = URI(url).toURL().openConnection()
+            connection.connectTimeout = 30_000
+            connection.readTimeout = 60_000
+            connection.getInputStream().use { input ->
                 destFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
