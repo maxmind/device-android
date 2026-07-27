@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0 (TBD)
+
+- The published AAR now declares a `minCompileSdk` of 30. Consumers that minify,
+  or that set a Java 9 or later `sourceCompatibility`, already needed
+  `compileSdk` 30: `InstallationInfoHelper` references
+  `android.content.pm.InstallSourceInfo`, added in API 30, so R8 reported it as
+  a missing class, and the Android Gradle plugin separately refuses to configure
+  Java 9 or later compilation below 30. For consumers that do neither, this is a
+  new requirement rather than a pre-existing one. The API-30 call is guarded by
+  an `SDK_INT` check and is safe at runtime, so the floor trades an obscure R8
+  failure for a clear Gradle error. If your build fails with a `minCompileSdk`
+  error, raise `compileSdk` to 30 or later, or stay on 0.3.1. Note this is your
+  app's `compileSdk` only: the SDK still supports API 27 and later devices, and
+  `minSdk` is unchanged.
+- The SDK is now built with Gradle 9.6.1 and the Android Gradle plugin 9.3.1.
+  The public API and the published ABI are unchanged, and the artifact still
+  imposes no Android Gradle plugin floor on consumers, so the toolchain change
+  itself requires no action from consumers.
+
 ## 0.3.1 (2026-07-24)
 
 - Removed the unused `androidx.lifecycle:lifecycle-runtime-ktx` dependency. In

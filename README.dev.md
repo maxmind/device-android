@@ -146,3 +146,28 @@ Review the versions from the dependency update check. If you want to update:
 5. Merge
 
 If you did this in the middle of releasing, start the release process over.
+
+## Upgrading Gradle
+
+`gradle/wrapper/gradle-wrapper.properties` pins `distributionSha256Sum`, so a
+plain `./gradlew wrapper --gradle-version=X` fails on purpose rather than
+silently dropping the checksum. Pass the new one instead:
+
+```bash
+# Checksum for the -bin distribution, from https://gradle.org/release-checksums/
+# or https://services.gradle.org/distributions/gradle-X-bin.zip.sha256
+# First pass: rewrites gradle-wrapper.properties
+./gradlew wrapper --gradle-version=X --gradle-distribution-sha256-sum=<sha256>
+
+# Second pass: regenerates gradlew, gradlew.bat and gradle-wrapper.jar using the
+# new version's own templates
+./gradlew wrapper --gradle-version=X --gradle-distribution-sha256-sum=<sha256>
+```
+
+Do not delete the checksum line to get past the failure. `retries` and
+`networkTimeout` come from the `Wrapper` task configuration in the root
+`build.gradle.kts`, so regeneration preserves them; only the checksum needs the
+flag.
+
+Note that the Android Gradle plugin constrains which Gradle versions work: AGP 9
+requires Gradle 9.6 or later, and AGP 8.x cannot run on Gradle 9.6 at all.

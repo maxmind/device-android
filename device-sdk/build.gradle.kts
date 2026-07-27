@@ -2,7 +2,6 @@ import java.net.URI
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.dokka)
     alias(libs.plugins.detekt)
@@ -28,6 +27,28 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        // The lowest compileSdk consumers can build against.
+        // InstallationInfoHelper references android.content.pm.InstallSourceInfo
+        // (API 30), so R8 reports it as a missing class for consumers minifying
+        // below that, and declaring the floor turns that into a clear Gradle
+        // error. Setting it explicitly also pins the value rather than
+        // inheriting whatever the Android Gradle plugin defaults to.
+        //
+        // A narrower fix exists: -dontwarn android.content.pm.InstallSourceInfo
+        // in consumer-rules.pro would silence R8 without declaring any floor,
+        // since the call is SDK_INT guarded and InstallationInfoHelper is
+        // internal, so consumer compilation never resolves the type. The floor
+        // was chosen deliberately anyway: a compileSdk below 30 also cannot
+        // compile Java 9+ source, and Play's targetSdk policy already requires
+        // far higher, so the set of consumers this excludes cannot ship. A clear
+        // Gradle error is worth more to them than a suppressed warning.
+        //
+        // If a collector ever references an android.* type newer than API 30,
+        // this value has to be raised to match; nothing verifies that for us.
+        aarMetadata {
+            minCompileSdk = 30
+        }
 
         // Build config fields for SDK metadata
         buildConfigField("String", "SDK_VERSION", "\"${project.version}\"")
@@ -63,6 +84,23 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+
+        // Pins the published ABI -- do not remove. The module name reaches the
+        // artifact two ways: it names the META-INF/<name>.kotlin_module file, and
+        // it is mangled into the JVM names of internal members, which also show
+        // up in the kotlin.Metadata d2 array of every class that references them.
+        // The consumer-visible public API is byte-for-byte unaffected, so this is
+        // about keeping the artifact's internal symbols stable rather than about
+        // consumer source compatibility. "device-sdk_release" is the name 0.3.1
+        // and earlier published; AGP 9's built-in Kotlin would use the project
+        // name instead. The api-compat workflow asserts the .kotlin_module name
+        // directly, so deleting this line fails CI.
+        //
+        // Setting it in the shared compilerOptions block gives every compilation
+        // the same name instead of AGP 8's per-variant names. That is harmless
+        // (.kotlin_module files are stripped from APKs) and means the unit tests
+        // exercise the same mangled names that ship in the release AAR.
+        moduleName.set("device-sdk_release")
 
         // Enable explicit API mode for better library API design
         freeCompilerArgs.addAll(
@@ -173,39 +211,47 @@ signing {
 val baselineVersion = "0.3.1"
 
 // Download baseline AAR directly from Maven Central to avoid local project resolution
-val downloadBaselineAar by tasks.registering {
-    val outputFile = layout.buildDirectory.file("japicmp/baseline.aar")
-    outputs.file(outputFile)
-    doLast {
-        val url = "https://repo1.maven.org/maven2/com/maxmind/device/device-sdk/$baselineVersion/device-sdk-$baselineVersion.aar"
-        val destFile = outputFile.get().asFile
-        destFile.parentFile.mkdirs()
-        URI(url).toURL().openStream().use { input ->
-            destFile.outputStream().use { output ->
-                input.copyTo(output)
+val downloadBaselineAar =
+    tasks.register("downloadBaselineAar") {
+        val outputFile = layout.buildDirectory.file("japicmp/baseline.aar")
+        outputs.file(outputFile)
+        doLast {
+            val url = "https://repo1.maven.org/maven2/com/maxmind/device/device-sdk/$baselineVersion/device-sdk-$baselineVersion.aar"
+            val destFile = outputFile.get().asFile
+            destFile.parentFile.mkdirs()
+            // Bounded: an unbounded read here can hang the api-compat job until
+            // GitHub's six-hour job limit rather than failing.
+            val connection = URI(url).toURL().openConnection()
+            connection.connectTimeout = 30_000
+            connection.readTimeout = 60_000
+            connection.getInputStream().use { input ->
+                destFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
             }
+            logger.lifecycle("Downloaded baseline AAR from $url")
         }
-        logger.lifecycle("Downloaded baseline AAR from $url")
     }
-}
 
 // Extract classes.jar from baseline AAR for comparison
-val extractBaselineClasses by tasks.registering(Copy::class) {
-    dependsOn(downloadBaselineAar)
-    from(zipTree(layout.buildDirectory.file("japicmp/baseline.aar"))) {
-        include("classes.jar")
+val extractBaselineClasses =
+    tasks.register<Copy>("extractBaselineClasses") {
+        dependsOn(downloadBaselineAar)
+        from(zipTree(layout.buildDirectory.file("japicmp/baseline.aar"))) {
+            include("classes.jar")
+        }
+        into(layout.buildDirectory.dir("japicmp/baseline"))
     }
-    into(layout.buildDirectory.dir("japicmp/baseline"))
-}
 
 // Extract classes.jar from current AAR for comparison
-val extractCurrentClasses by tasks.registering(Copy::class) {
-    dependsOn("bundleReleaseAar")
-    from(zipTree(layout.buildDirectory.file("outputs/aar/device-sdk-release.aar"))) {
-        include("classes.jar")
+val extractCurrentClasses =
+    tasks.register<Copy>("extractCurrentClasses") {
+        dependsOn("bundleReleaseAar")
+        from(zipTree(layout.buildDirectory.file("outputs/aar/device-sdk-release.aar"))) {
+            include("classes.jar")
+        }
+        into(layout.buildDirectory.dir("japicmp/current"))
     }
-    into(layout.buildDirectory.dir("japicmp/current"))
-}
 
 tasks.register<me.champeau.gradle.japicmp.JapicmpTask>("japicmp") {
     dependsOn(extractBaselineClasses, extractCurrentClasses)

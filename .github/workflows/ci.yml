@@ -26,6 +26,10 @@ jobs:
           # Use the MIT-licensed basic caching provider instead of the
           # default enhanced caching, which is proprietary.
           cache-provider: basic
+          # Checked in as a binary, so verify it against Gradle's published
+          # checksums. On by default, but stated explicitly so it cannot vanish
+          # in an action upgrade without a visible diff.
+          validate-wrappers: true
 
       - name: Build SDK
         run: ./gradlew :device-sdk:build
@@ -39,8 +43,33 @@ jobs:
       - name: Build sample app
         run: ./gradlew :sample:assembleDebug
 
+      # Nothing else compiles the androidTest sources, and a toolchain upgrade is
+      # the likeliest thing to break them. Cheap, so it runs before the R8 build.
+      - name: Compile instrumented tests
+        if: ${{ !cancelled() }}
+        run: ./gradlew :device-sdk:assembleDebugAndroidTest
+
+      # device-sdk's release build type and sample's debug build type are the only
+      # places isMinifyEnabled is set, both to false, so this is the only step
+      # that runs R8 over the SDK's classes at all. It does not reproduce the
+      # missing-class failure that motivates minCompileSdk: that needs a consumer
+      # compiling below 30, and the sample is at compileSdk 36. The floor itself
+      # is pinned by the metadata assertion in api-compat.yml.
+      #
+      # AGP also wires lintVitalRelease into the release assemble, so a failure
+      # here is not necessarily an R8 or keep-rule problem.
+      - name: Build minified sample app
+        if: ${{ !cancelled() }}
+        run: ./gradlew :sample:assembleRelease
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: test-results
-          path: device-sdk/build/reports/tests/
+          # R8 failures are explained by missing_rules.txt and configuration.txt,
+          # not by the test reports, and those are otherwise discarded with the
+          # runner.
+          path: |
+            device-sdk/build/reports/tests/
+            sample/build/outputs/mapping/release/
+            sample/build/reports/

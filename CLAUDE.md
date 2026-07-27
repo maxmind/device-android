@@ -33,7 +33,7 @@ Follow Kotlin conventions (kotlinlang.org/docs/coding-conventions.html):
 # Build SDK library only (fastest for SDK development)
 ./gradlew :device-sdk:assemble
 
-# Build debug variants (skips minification issues)
+# Build debug variants (no minification, so faster)
 ./gradlew assembleDebug
 
 # Build SDK library with all variants
@@ -46,14 +46,12 @@ Follow Kotlin conventions (kotlinlang.org/docs/coding-conventions.html):
 ### Testing
 
 ```bash
-# Run unit tests for SDK
+# Run unit tests for SDK. Under AGP 9 this runs the suite once, against the
+# debug variant: AGP 9 no longer registers testReleaseUnitTest.
 ./gradlew :device-sdk:test
 
 # Run specific test class
 ./gradlew :device-sdk:test --tests "com.maxmind.device.DeviceTrackerTest"
-
-# Run tests with coverage (JaCoCo)
-./gradlew :device-sdk:testDebugUnitTest jacocoTestReport
 ```
 
 ### Code Quality
@@ -66,7 +64,7 @@ Follow Kotlin conventions (kotlinlang.org/docs/coding-conventions.html):
 ./gradlew ktlintFormat
 
 # Generate API documentation
-./gradlew :device-sdk:dokkaHtml
+./gradlew :device-sdk:dokkaGenerate
 # Output: device-sdk/build/dokka/
 ```
 
@@ -237,24 +235,23 @@ mise run setup      # Accepts licenses, installs platform packages, creates loca
 
 **Manual setup:**
 
-1. Java 21 (Android Studio JDK) configured in `gradle.properties`:
+1. Java 21. The version is pinned by `mise.toml`, not by the build scripts —
+   there is no `org.gradle.java.home` in `gradle.properties`. Without mise, put
+   a Java 21 JDK on `JAVA_HOME`.
 
-   ```
-   org.gradle.java.home=/home/greg/.local/share/android-studio/jbr
-   ```
-
-2. Android SDK with API 36 at `~/Android/Sdk`
+2. Android SDK with the platform and build-tools matching `compileSdk` in
+   `gradle/libs.versions.toml`
 
 3. `local.properties` file (gitignored):
+
    ```properties
-   sdk.dir=/home/greg/Android/Sdk
+   sdk.dir=/path/to/your/Android/Sdk
    ```
 
 **Java Version Issues:**
 
-- The project requires Java 17+ (set to use Java 21 from Android Studio)
-- If you see "25" error, Java 25 is being used instead
-- Fix by setting `org.gradle.java.home` in `gradle.properties`
+- The project requires Java 17+; `mise.toml` pins Java 21
+- If Gradle picks up a different JDK, check `mise current` and `JAVA_HOME`
 
 ## Common Issues
 
@@ -266,11 +263,6 @@ mise run setup      # Accepts licenses, installs platform packages, creates loca
 ~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
 ```
 
-**"Resource mipmap/ic_launcher not found"**
-
-- Sample app has no launcher icons (intentional for simplicity)
-- Build works for `assembleDebug`, may fail on `assemble` (release variant)
-
 **Detekt/ktlint failures**
 
 - Skip with: `./gradlew build -x detekt -x ktlintCheck`
@@ -278,19 +270,22 @@ mise run setup      # Accepts licenses, installs platform packages, creates loca
 
 ### Release Build MinifyEnabled
 
-The sample app has `isMinifyEnabled = true` for release builds, which may cause
-R8 issues. For development:
+The sample app has `isMinifyEnabled = true` for release builds, so
+`:sample:assembleRelease` is the only thing that runs R8 over the SDK's classes.
+CI runs it on every pull request and on pushes to `main`, so it is expected to
+pass; if it starts failing, treat that as a real problem rather than an expected
+quirk of the sample.
 
-```bash
-# Build debug variant instead
-./gradlew :sample:assembleDebug
-```
+Note what a green run does and does not prove. It shows R8 completed, not that
+`consumer-rules.pro` still keeps everything kotlinx.serialization needs at
+runtime — that would fail as a `SerializationException` inside a consumer app,
+not as a build failure. AGP also wires `lintVitalRelease` into this task, so a
+failure is not necessarily R8's.
 
 ## Testing Strategy
 
 - **Unit tests** in `device-sdk/src/test/` use JUnit 5, MockK, and Robolectric
 - **Android instrumented tests** in `device-sdk/src/androidTest/`
-- Test coverage with JaCoCo
 
 When adding features, write unit tests that:
 
@@ -307,7 +302,7 @@ Uses Gradle version catalog in `gradle/libs.versions.toml`:
 - `[plugins]` - Gradle plugins
 - `[bundles]` - Grouped dependencies (e.g., `ktor`, `testing`)
 
-Access in build files: `libs.ktor.client.core`, `libs.plugins.kotlin.android`
+Access in build files: `libs.ktor.client.core`, `libs.plugins.android.library`
 
 ## Maven Publishing Configuration
 

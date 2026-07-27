@@ -93,26 +93,25 @@ Replace `/path/to/your/Android/Sdk` with your actual SDK location:
 ./gradlew :sample:installDebug
 
 # Generate documentation
-./gradlew dokkaHtml
+./gradlew :device-sdk:dokkaGenerate
 ```
 
 ## Publishing to Maven Central
 
-The SDK is configured for Maven Central publishing:
+Releases are cut with `./dev-bin/release.sh`. See [README.dev.md](README.dev.md)
+for the full process, including Central Portal credentials and GPG setup.
+
+The underlying task, if you need it directly:
 
 ```bash
-./gradlew :device-sdk:publishReleasePublicationToMavenCentralRepository
+./gradlew :device-sdk:publishAndReleaseToMavenCentral
 ```
 
-Required credentials (set in `local.properties` or environment variables):
-
-```properties
-signing.keyId=YOUR_KEY_ID
-signing.password=YOUR_KEY_PASSWORD
-signing.secretKeyRingFile=/path/to/secring.gpg
-mavenCentralUsername=YOUR_USERNAME
-mavenCentralPassword=YOUR_PASSWORD
-```
+Credentials come from `~/.m2/settings.xml` (server id `central`), or
+`mavenCentralUsername` / `mavenCentralPassword` as Gradle properties or
+`ORG_GRADLE_PROJECT_*` environment variables. Signing uses the system `gpg`
+command via `signing { useGpgCmd() }`, so `signing.keyId` and
+`signing.secretKeyRingFile` are not used.
 
 ## Environment Variables
 
@@ -139,11 +138,14 @@ $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
 ### Wrong Java Version
 
+The Java version is pinned in `mise.toml`. Check what is actually active:
+
 ```bash
-# Use Android Studio's JDK
-export JAVA_HOME=~/.local/share/android-studio/jbr
-./gradlew build
+mise current
+java -version
 ```
+
+Without mise, put a JDK matching `mise.toml` on `JAVA_HOME`.
 
 ### SDK Not Found
 

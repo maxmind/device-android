@@ -4,7 +4,9 @@ Android SDK for collecting and reporting device data to MaxMind.
 
 ## Requirements
 
-- Android API 27+ (Android 8.1+)
+- Android API 27+ (Android 8.1+) on the device
+- Your app must compile against `compileSdk` 30 or later, from 0.4.0 onwards
+  (the AAR declares `minCompileSdk = 30`)
 - A recent stable version of Kotlin
 - AndroidX libraries
 
@@ -189,7 +191,7 @@ To run the sample app:
 ### Generate Documentation
 
 ```bash
-./gradlew :device-sdk:dokkaHtml
+./gradlew :device-sdk:dokkaGenerate
 ```
 
 Documentation will be generated in `device-sdk/build/dokka/`.

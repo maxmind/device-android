@@ -10,7 +10,7 @@ coroutines = "1.11.0"
 serialization = "1.11.0"
 
 # Android
-androidGradlePlugin = "8.13.1"
+androidGradlePlugin = "9.3.1"
 androidxAppCompat = "1.7.1"
 androidxLifecycle = "2.11.0"
 
@@ -79,7 +79,6 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
